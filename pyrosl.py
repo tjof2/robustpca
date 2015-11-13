@@ -4,7 +4,7 @@ import numpy as np
 from numpy.ctypeslib import ndpointer
 
 # Load the library
-librosl = ctypes.cdll.LoadLibrary('./libpyrosl.so.0.1')
+librosl = ctypes.cdll.LoadLibrary('./librosl.so.0.1')
 pyrosl = librosl.pyROSL
 
 # Python wrapper for rather obtuse C function
@@ -64,12 +64,11 @@ def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, ve
         pyrosl(D, A, E, m, n, rank, reg, tol, iters, 1, sampling, verbose)
     
     # Return the results
-    return (A, E)
-    
+    return (A, E)    
     
 if __name__ == "__main__":
-    # There will be a test suite here
-    print 'Hello, world'
+    # Tell the user to run the proper test suite
+    print 'Run \'python test.py\' to test the build of pyrosl'
     
     
     

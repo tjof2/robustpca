@@ -6,8 +6,8 @@ LFLAGS = -lopenblas -llapack -larmadillo
 MAJ_VERSION = 0
 MIN_VERSION = 1
 
-TARGET = libpyrosl.so.$(MAJ_VERSION).$(MIN_VERSION)
-SRCS = pyrosl.cpp
+TARGET = librosl.so.$(MAJ_VERSION).$(MIN_VERSION)
+SRCS = rosl.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: all

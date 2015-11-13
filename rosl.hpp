@@ -18,8 +18,8 @@
 
 ***************************************************************************/
 
-#ifndef _PYROSL_HPP_
-#define _PYROSL_HPP_
+#ifndef _ROSL_HPP_
+#define _ROSL_HPP_
 
 #if defined (_WIN32)
 	#if defined(rosllib_EXPORTS)

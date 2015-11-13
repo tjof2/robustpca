@@ -21,18 +21,20 @@ which needs to be installed first.
 
 **Building from source**
 
-To build ROSL, unpack the source and `cd` into the unpacked directory:
+To build ROSL, unpack the source and `cd` into the unpacked directory, then type `make`:
 
 ```
 $ tar -xzf rosl.tar.gz
 $ cd rosl
+$ make
 ```
 
-The next step is to configure the build, and then compile it. This will generate a C++
-library called `librosl.so`:
+This will generate a C++ library called `librosl.so`, which is called by the Python module `pyrosl`.
+Included are a Python example, and a simple Python test suite to check the implementation:
 
 ```
-make
+$ python example.py
+$ python test.py
 ```
 
 ## Using ROSL
