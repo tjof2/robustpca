@@ -36,3 +36,6 @@
 
 # SO versioned files
 *.so.*
+
+# PYC
+*.pyc
