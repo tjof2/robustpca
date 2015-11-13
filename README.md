@@ -1,10 +1,13 @@
 # ROSL
 
-Last updated: 13/11/2015
+C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the Armadillo 
+linear algebra library. ROSL solves the problem:
 
-C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the Armadillo linear algebra library.
+![Robust PCA problem][rpcaequation]
 
-> [1] Xianbiao Shu, Fatih Porikli, Narendra Ahuja. "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". 
+
+> [1] Xianbiao Shu, Fatih Porikli, Narendra Ahuja. "Robust Orthonormal Subspace Learning: 
+> Efficient Recovery of Corrupted Low-rank Matrices". 
 > *Proc. of International Conference on Computer Vision and Pattern Recognition (CVPR)*, **2014**
 
 ## Contents
@@ -42,3 +45,5 @@ $ python test.py
 ## Using ROSL
 
 *Description to go here*
+
+[rpcaequation]: http://i.imgur.com/HMXYTQo.png
