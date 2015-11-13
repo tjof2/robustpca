@@ -3,7 +3,7 @@
 C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the Armadillo 
 linear algebra library. ROSL solves the problem:
 
-<img src="http://i.imgur.com/HMXYTQo.png" width="300">
+<img src="http://i.imgur.com/HMXYTQo.png" width="400">
 
 > [1] Xianbiao Shu, Fatih Porikli, Narendra Ahuja. "Robust Orthonormal Subspace Learning: 
 > Efficient Recovery of Corrupted Low-rank Matrices". 
