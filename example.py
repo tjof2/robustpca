@@ -12,15 +12,15 @@ D = D.astype(np.double, copy = False)
 
 # Run the sub-sampled version
 print 'Starting ROSL+'
-A1, E1 = pyrosl.rosl(D,'subsample', 300, 3, 0.02, 1E-5, 50, True)
+A1, E1 = pyrosl.rosl(D,'subsample', (72*72,500) , 3, 0.02, 1E-5, 50, True)
 print 'Finished ROSL+'
 print '---'
 
 # Run the full ROSL algorithm
-print 'Starting ROSL'
-A2, E2 = pyrosl.rosl(D, 'full', rank=3, reg=0.015)
-print 'Finished ROSL'
-print '---'
+#print 'Starting ROSL'
+#A2, E2 = pyrosl.rosl(D, 'full', rank=3, reg=0.015)
+#print 'Finished ROSL'
+#print '---'
 
 # Output some numbers
 error1 = np.linalg.norm(D - A1 - E1, 'fro') / np.linalg.norm(D, 'fro')

@@ -22,7 +22,7 @@
 #define _ROSL_HPP_
 
 #if defined (_WIN32)
-	#if defined(rosllib_EXPORTS)
+	#if defined(librosl_EXPORTS)
 		#define DLLEXPORT __declspec(dllexport)
 	#else
 		#define DLLEXPORT __declspec(dllimport)
@@ -42,16 +42,18 @@
 class DLLEXPORT ROSL {	
 	public:
 		ROSL(){
-			// Default parameters
+			// Initialize default class parameters
 			method 	= 0;
-			R		= 5;
+			Sl 		= 100;
+			Sh      = 100;
+			R		= 5;			
 			lambda 	= 0.02;
 			tol 	= 1E-6;
 			maxIter = 100;
-			S 		= 100;
 			verbose = false;
 		};
 		~ROSL(){
+			// Clear memory
 			D.reset();
 			E.reset();
 			A.reset();
@@ -65,25 +67,26 @@ class DLLEXPORT ROSL {
 		void runROSL(arma::mat *X);	
 		
 		// Set parameters
-		void Parameters(int rankEstimate, double lambdaParameter, double tolerance, int maxiterations, int usermethod, int subsampling, bool verb) {
+		void Parameters(int rankEstimate, double lambdaParameter, double tolerance, int maxiterations, int usermethod, int subsamplingl, int subsamplingh, bool verb) {
 			method 	= usermethod;
+			Sl 		= subsamplingl;
+			Sh		= subsamplingh;
 			R 		= rankEstimate;
 			lambda 	= lambdaParameter;
 			tol 	= tolerance;
 			maxIter = maxiterations;
-			S 		= subsampling;
 			verbose = verb;
 			return;
 		};
 		
-		void getA(double *aPy, int sz) {
-			  memcpy(aPy, A.memptr(), sz*sizeof(double));
+		void getA(double *aPy) {
+			  memcpy(aPy, A.memptr(), A.n_elem*sizeof(double));
 			  A.reset();
 			  return;
 		};
 		
-		void getE(double *ePy, int sz) {
-			 memcpy(ePy, E.memptr(), sz*sizeof(double));
+		void getE(double *ePy) {
+			 memcpy(ePy, E.memptr(), E.n_elem*sizeof(double));
 			 E.reset();
 			 return;
 		};
@@ -99,20 +102,22 @@ class DLLEXPORT ROSL {
 		inline void LowRankDictionaryShrinkage(arma::mat *X);
 
 		// User parameters
-		int method, R, S, maxIter;
+		int method, R, Sl, Sh, maxIter;
 		double lambda, tol;
 		bool verbose;
 
 		// Basic parameters	
-		int rank;
-		double mu;	
+		int rank, roslIters, rlrIters;
+		double mu;
 		
 		// Armadillo matrices		
 		arma::mat D, A, E, alpha, Z, Etmp, error;	
 };
 
+// This is the Python/C interface using ctypes
+//		- Needs to be C-style for simplicity
 extern "C" {
-	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsample, bool verbose);
+	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsamplel, int subsampleh, bool verbose);
 }
 
 #endif

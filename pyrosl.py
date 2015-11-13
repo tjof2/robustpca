@@ -13,7 +13,7 @@ pyrosl = librosl.pyROSL
 #                              'subsample': Use a subset of the data (ROSL+ algorithm), 
 #                                            with size defined by the'sampling' option
 #
-#     sampling = integer     - How much of the data matrix to use for ROSL+
+#     sampling = (int, int)  - How much of the data matrix to use for ROSL+ in cols and rows
 #
 #     rank     = integer     - Initial estimate of data dimensionality
 #
@@ -25,7 +25,7 @@ pyrosl = librosl.pyROSL
 #
 #     verbose  = boolean     - Show or hide C++ output
 #
-def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, verbose=False):
+def rosl(D, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-5, iters=50, verbose=False):
  
     # Get size of D
     m, n = D.shape
@@ -36,9 +36,10 @@ def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, ve
         print '         Convert using numpy.asfortranarray(D)'
         return
     # Sanity-check of user parameters
-    elif method == 'subsample' and sampling == -1:
-        print 'Warning: Method \'subsample\' selected, but option \'sampling\' is not set'
-        return
+    elif method == 'subsample':
+        if sampling[0] == -1 or sampling[1] == -1:
+            print 'Warning: Method \'subsample\' selected, but option \'sampling\' is not set'
+            return
     elif method == 'subsample' and sampling > (m, n):
         print 'Warning: Method \'subsample\' selected, but option \'sampling\' is greater than D dimensions'
         return
@@ -61,10 +62,11 @@ def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, ve
                        ctypes.c_int, ctypes.c_int,
                        ctypes.c_int, ctypes.c_double,
                        ctypes.c_double, ctypes.c_int,
-                       ctypes.c_int, ctypes.c_int, ctypes.c_bool]
+                       ctypes.c_int, ctypes.c_int, 
+                       ctypes.c_int, ctypes.c_bool]
 
     # Now run it with the users parameters
-    pyrosl(D, A, E, m, n, rank, reg, tol, iters, mode, sampling, verbose)
+    pyrosl(D, A, E, m, n, rank, reg, tol, iters, mode, sampling[0], sampling[1], verbose)
     
     # Return the results
     return (A, E)    

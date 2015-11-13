@@ -32,14 +32,14 @@ void ROSL::runROSL(arma::mat *X) {
 			break;
 		case 1:		
 			// For sub-sampled ROSL+
-			arma::uvec rowall, colall;			
+			arma::uvec rowall, colall;
 			arma::arma_rng::set_seed_random();
-			rowall = arma::shuffle(arma::linspace<arma::uvec>(0, m-1, m));
-			colall = arma::shuffle(arma::linspace<arma::uvec>(0, n-1, n));
+			rowall = (Sh == m) ? arma::linspace<arma::uvec>(0, m-1, m) : arma::shuffle(arma::linspace<arma::uvec>(0, m-1, m));
+			colall = (Sl == n) ? arma::linspace<arma::uvec>(0, n-1, n) : arma::shuffle(arma::linspace<arma::uvec>(0, n-1, n));			
 			
 			arma::uvec rowsample, colsample;
-			rowsample = arma::join_vert(rowall.subvec(0,S-1), arma::sort(rowall.subvec(S,m-1)));			
-			colsample = arma::join_vert(colall.subvec(0,S-1), arma::sort(colall.subvec(S,n-1)));
+			rowsample = (Sh == m) ? rowall : arma::join_vert(rowall.subvec(0,Sh-1), arma::sort(rowall.subvec(Sh,m-1)));			
+			colsample = (Sl == n) ? colall : arma::join_vert(colall.subvec(0,Sl-1), arma::sort(colall.subvec(Sl,n-1)));
 
 			arma::mat Xperm;
 			Xperm = (*X).rows(rowsample);
@@ -47,14 +47,14 @@ void ROSL::runROSL(arma::mat *X) {
 	
 			// Take the columns and solve the small ROSL problem
 			arma::mat XpermTmp;
-			XpermTmp = Xperm.cols(0,S-1);	
+			XpermTmp = Xperm.cols(0,Sl-1);	
 			InexactALM_ROSL(&XpermTmp);
 	
 			// Free some memory
-			XpermTmp.reset();
+			XpermTmp.set_size(Sh,Sl);
 			
 			// Now take the rows and do robust linear regression
-			XpermTmp = Xperm.rows(0,S-1);		
+			XpermTmp = Xperm.rows(0,Sh-1);		
 			InexactALM_RLR(&XpermTmp);
 			
 			// Free some memory
@@ -79,17 +79,14 @@ void ROSL::runROSL(arma::mat *X) {
 	error.reset();
 	D.reset();
 	alpha.reset();
-	
-	// Read out the final error
-	if(verbose) {	
-		std::cout<<"Final error: "<<arma::norm(*X - A - E,"fro")/arma::norm(*X,"fro")<<std::endl;
-	}
+
 	return;
 };
 
 inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 	int m = (*X).n_rows;
 	int n = (*X).n_cols;
+	int precision = (int)std::abs(std::log10(tol))+2;
 
 	// Initialize A, Z, E, Etmp and error
 	A.set_size(m, n);
@@ -100,7 +97,7 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 	D.set_size(m, R);
 	error.set_size(m, n);
 
-	// Initialze alpha randomly
+	// Initialize alpha randomly
 	arma::arma_rng::set_seed_random();
 	alpha.randu();
 	
@@ -121,6 +118,8 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 	rho = 1.5;
 	mubar = mu * 1E7;
 			
+	double stopcrit;		
+			
 	for(int i = 0; i < maxIter; i++) {				
 		// Error matrix and intensity thresholding
 		Etmp = *X + Z - A;
@@ -135,20 +134,30 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 		Z = (Z + *X - A - E) / rho;
 		mu = (mu*rho < mubar) ? mu*rho : mubar;
 			
-		// Calculate stop criterion
-		double stopcrit;
-		stopcrit = arma::norm(*X - A - E, "fro") / fronorm;
-				
-		// Report progress
-		if(verbose) {
-			std::cout<<"   Iteration: "<<i+1<<", Rank: "<<D.n_cols<<", Error: "<<std::fixed<<std::setprecision(6)<<stopcrit<<std::endl;
+		// Calculate stop criterion		
+		stopcrit = arma::norm(*X - A - E, "fro") / fronorm;		
+		roslIters = i+1;
+									
+		// Exit if stop criteria is met		
+		if(stopcrit < tol) {
+			// Report progress
+			if(verbose) {
+				std::cout<<"---------------------------------------------------------"<<std::endl;
+				std::cout<<"   ROSL iterations: "<<i+1<<std::endl;
+				std::cout<<"        Final rank: "<<D.n_cols<<std::endl;
+				std::cout<<"       Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
+				std::cout<<"---------------------------------------------------------"<<std::endl;
+			}			
+			return;
 		}
-											
-		// Exit if stop criteria is met
-		if(stopcrit < tol) {					
-			break;
-		}
-	}	
+	}
+	
+	// Report convergence warning
+	std::cout<<"---------------------------------------------------------"<<std::endl;
+	std::cout<<"   WARNING: ROSL did not converge in "<<roslIters<<" iterations"<<std::endl;
+	std::cout<<"            Final rank:  "<<D.n_cols<<std::endl;
+	std::cout<<"            Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
+	std::cout<<"---------------------------------------------------------"<<std::endl;
 	
 	return;		
 };
@@ -156,6 +165,7 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 inline void ROSL::InexactALM_RLR(arma::mat *X) {
 	int m = (*X).n_rows;
 	int n = (*X).n_cols;
+	int precision = (int)std::abs(std::log10(tol))+2;
 
 	// Initialize A, Z, E, Etmp
 	A.set_size(m, n);
@@ -178,6 +188,8 @@ inline void ROSL::InexactALM_RLR(arma::mat *X) {
 	mu = 10 * 5E-2 / infnorm;
 	rho = 1.5;
 	mubar = mu * 1E7;
+	
+	double stopcrit;
 			
 	for(int i = 0; i < maxIter; i++) {				
 		// Error matrix and intensity thresholding
@@ -193,30 +205,40 @@ inline void ROSL::InexactALM_RLR(arma::mat *X) {
 		int SV;
 		
 		// Given D and A...
-		arma::svd_econ(Usvd, Ssvd, Vsvd, D.rows(0,S-1));
+		arma::svd_econ(Usvd, Ssvd, Vsvd, D.rows(0,Sh-1));
 		Sshort = arma::find(Ssvd > 0.);
 		SV = Sshort.n_elem;
 		alpha = Vsvd.cols(0,SV-1) * arma::diagmat(1./Ssvd.subvec(0,SV-1)) * arma::trans(Usvd.cols(0,SV-1)) * (*X + Z - E);
-		A = (D.rows(0,S-1)) * alpha;
+		A = (D.rows(0,Sh-1)) * alpha;
 	
 		// Update Z
 		Z = (Z + *X - A - E) / rho;
 		mu = (mu*rho < mubar) ? mu*rho : mubar;
 			
-		// Calculate stop criterion
-		double stopcrit;
+		// Calculate stop criterion		
 		stopcrit = arma::norm(*X - A - E, "fro") / fronorm;
-				
-		// Report progress
-		if(verbose) {
-			std::cout<<"   Iteration: "<<i+1<<", Rank: "<<D.n_cols<<", Error: "<<std::fixed<<std::setprecision(6)<<stopcrit<<std::endl;
-		}
-											
+		rlrIters = i+1;
+										
 		// Exit if stop criteria is met
-		if(stopcrit < tol) {					
-			break;
+		if(stopcrit < tol) {
+			// Report progress
+			if(verbose) {
+				std::cout<<"---------------------------------------------------------"<<std::endl;
+				std::cout<<"    RLR iterations: "<<i+1<<std::endl;
+				std::cout<<"        Final rank: "<<D.n_cols<<std::endl;
+				std::cout<<"       Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
+				std::cout<<"---------------------------------------------------------"<<std::endl;
+			}					
+			return;
 		}
 	}
+	
+	// Report convergence warning
+	std::cout<<"---------------------------------------------------------"<<std::endl;
+	std::cout<<"   WARNING: RLR did not converge in "<<rlrIters<<" iterations"<<std::endl;
+	std::cout<<"            Final rank:  "<<D.n_cols<<std::endl;
+	std::cout<<"            Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
+	std::cout<<"---------------------------------------------------------"<<std::endl;
 	
 	return;	
 };
@@ -279,15 +301,14 @@ inline void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
 };
 
 // This is the Python/C interface using ctypes
-//		- Need to be C-style for simplicity
-//		- Couldn't get ArmaNpy to work (12/11/15)
-void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsample, bool verbose) {
+//		- Needs to be C-style for simplicity
+void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsamplel, int subsampleh, bool verbose) {
 	
 	// Create class instance
 	ROSL *pyrosl = new ROSL();
 	
 	// First pass the parameters (the easy bit!)
-	pyrosl->Parameters(R, lambda, tol, iter, method, subsample, verbose);
+	pyrosl->Parameters(R, lambda, tol, iter, method, subsamplel, subsampleh, verbose);
 	
 	/////////////////////
 	//                 //
@@ -301,18 +322,21 @@ void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double l
 	// Remember also that Armadillo stores in column-major order
 	arma::mat X(xPy, m, n, false, false);
 	
-	// Now run and time ROSL	
+	// Time ROSL	
 	auto timerS1 = std::chrono::steady_clock::now();
-		pyrosl->runROSL(&X);
+	
+	// Run ROSL
+	pyrosl->runROSL(&X);
+		
 	auto timerE1 = std::chrono::steady_clock::now();
 	auto elapsed1 = std::chrono::duration_cast<std::chrono::microseconds>(timerE1 - timerS1);
-	if(verbose) {
-		std::cout<<"Total time: "<<std::setprecision(5)<<(elapsed1.count()/1E6)<<" seconds"<<std::endl<<std::endl;	
+	if(verbose) {		
+		std::cout<<"Total time: "<<std::setprecision(5)<<(elapsed1.count()/1E6)<<" seconds"<<std::endl;
 	}
 		
 	// Now copy the data back to return to Python	
-	pyrosl->getA(aPy, m*n);
-	pyrosl->getE(ePy, m*n);
+	pyrosl->getA(aPy);
+	pyrosl->getE(ePy);
 	
 	// Free memory
 	delete pyrosl;
