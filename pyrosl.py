@@ -42,6 +42,12 @@ def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, ve
     elif method == 'subsample' and sampling > (m, n):
         print 'Warning: Method \'subsample\' selected, but option \'sampling\' is greater than D dimensions'
         return
+        
+    # Convert method to mode
+    if method == 'full':
+        mode = 0
+    elif method == 'subsample':
+        mode = 1
 
     # Create the low-rank and error matrices    
     A = np.zeros((m, n), dtype=np.double, order='F')
@@ -56,12 +62,9 @@ def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, ve
                        ctypes.c_int, ctypes.c_double,
                        ctypes.c_double, ctypes.c_int,
                        ctypes.c_int, ctypes.c_int, ctypes.c_bool]
-                       
+
     # Now run it with the users parameters
-    if method == 'full':       
-        pyrosl(D, A, E, m, n, rank, reg, tol, iters, 0, sampling, verbose)
-    elif method == 'subsample':
-        pyrosl(D, A, E, m, n, rank, reg, tol, iters, 1, sampling, verbose)
+    pyrosl(D, A, E, m, n, rank, reg, tol, iters, mode, sampling, verbose)
     
     # Return the results
     return (A, E)    

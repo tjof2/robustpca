@@ -112,7 +112,7 @@ class DLLEXPORT ROSL {
 };
 
 extern "C" {
-	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int mode, int subsample, bool verbose);
+	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsample, bool verbose);
 }
 
 #endif

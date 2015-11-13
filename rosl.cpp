@@ -281,13 +281,13 @@ inline void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
 // This is the Python/C interface using ctypes
 //		- Need to be C-style for simplicity
 //		- Couldn't get ArmaNpy to work (12/11/15)
-void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int mode, int subsample, bool verbose) {
+void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsample, bool verbose) {
 	
 	// Create class instance
 	ROSL *pyrosl = new ROSL();
 	
 	// First pass the parameters (the easy bit!)
-	pyrosl->Parameters(R, lambda, tol, iter, mode, subsample, verbose);
+	pyrosl->Parameters(R, lambda, tol, iter, method, subsample, verbose);
 	
 	/////////////////////
 	//                 //
