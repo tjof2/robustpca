@@ -6,7 +6,7 @@ import timeit
 from numpy.ctypeslib import ndpointer
 
 # Load the library
-librosl = ctypes.cdll.LoadLibrary('./librosllib.so')
+librosl = ctypes.cdll.LoadLibrary('./librosl.so')
 pyrosl = librosl.pyROSL
 
 pyrosl.restype = None
@@ -19,7 +19,7 @@ pyrosl.argtypes = [ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
                    ctypes.c_int, ctypes.c_int]
 
 # Load the data
-mat = scipy.io.loadmat('../../../Dataset.mat')
+mat = scipy.io.loadmat('../Dataset.mat')
 D = np.array(mat['var2'], order='F')
 D = D.astype(np.double, copy = False)
 sizeD = D.shape
