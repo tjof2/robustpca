@@ -17,7 +17,9 @@ C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the A
 **Dependencies**
 
 ROSL makes use of the **[Armadillo](http://arma.sourceforge.net)** C++ linear algebra library, 
-which needs to be installed first.
+which needs to be installed first. It is recommended that you use a high-speed replacement for
+LAPACK and BLAS such as OpenBLAS, MKL or ACML; more information can be found in the [Armadillo
+FAQs](http://arma.sourceforge.net/faq.html#dependencies).
 
 **Building from source**
 
@@ -30,7 +32,7 @@ $ make
 ```
 
 This will generate a C++ library called `librosl.so`, which is called by the Python module `pyrosl`.
-Included are a Python example, and a simple Python test suite to check the implementation:
+Included are an example usage, and a simple Python test suite to check the implementation:
 
 ```
 $ python example.py
@@ -39,4 +41,4 @@ $ python test.py
 
 ## Using ROSL
 
-*Python description to go here*
+*Description to go here*

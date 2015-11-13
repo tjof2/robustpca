@@ -18,4 +18,4 @@ $(TARGET): $(OBJS)
 	
 .PHONY: clean
 clean:
-	rm *~ *.so *.o
+	rm *~ *.so* *.o
