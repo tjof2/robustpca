@@ -1,7 +1,8 @@
 # ROSL
 
 C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the Armadillo 
-linear algebra library. ROSL solves the problem:
+linear algebra library. ROSL solves the robust PCA problem, recovering a low-rank matrix **A**
+from the corrupted observation **X** according to:
 
 <img src="http://i.imgur.com/HMXYTQo.png" width="400">
 
