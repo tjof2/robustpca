@@ -1,14 +1,20 @@
 # ROSL
 
 C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the Armadillo 
-linear algebra library. ROSL solves the robust PCA problem, recovering a low-rank matrix **A**
+linear algebra library. A Python wrapper for interfacing with [HyperSpy](http://hyperspy.org/)
+is also included.
+
+ROSL solves the robust PCA problem, recovering a low-rank matrix **A**
 from the corrupted observation **X** according to:
 
 <img src="http://i.imgur.com/HMXYTQo.png" width="400">
 
+where **E** is the sparse error term.
+
 > [1] Xianbiao Shu, Fatih Porikli, Narendra Ahuja. "Robust Orthonormal Subspace Learning: 
 > Efficient Recovery of Corrupted Low-rank Matrices". 
 > *Proc. of International Conference on Computer Vision and Pattern Recognition (CVPR)*, **2014**
+> http://dx.doi.org/10.1109/CVPR.2014.495
 
 ## Contents
 
