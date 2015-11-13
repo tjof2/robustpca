@@ -19,7 +19,7 @@
 ***************************************************************************/
 
 // ROSL header
-#include "rosl.hpp"
+#include "pyrosl.hpp"
 
 void ROSL::runROSL(arma::mat *X) {
 	int m = (*X).n_rows;

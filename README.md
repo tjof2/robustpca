@@ -10,7 +10,7 @@ C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the A
 ## Contents
 
 + [Installation](#installation)
-+ [Using ROSL](#using-pgure-svt)
++ [Using ROSL](#using-rosl)
 
 ## Installation
 

@@ -1,10 +1,13 @@
-CXX := /usr/bin/g++-4.8
+CXX = /usr/bin/g++-4.8
 CXXFLAGS = -O3 -fPIC -Wall -std=c++11 -march=native
 LDFLAGS = -shared
-LFLAGS = -lstdc++ -larmadillo
+LFLAGS = -lopenblas -llapack -larmadillo
 
-TARGET := librosl.so
-SRCS = rosl.cpp
+MAJ_VERSION = 0
+MIN_VERSION = 1
+
+TARGET = libpyrosl.so.$(MAJ_VERSION).$(MIN_VERSION)
+SRCS = pyrosl.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: all

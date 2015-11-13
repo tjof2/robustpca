@@ -34,11 +34,5 @@
 *.tar
 *.gz
 
-# CMake Files
-CMake*
-
-# Test
-testrosl
-
-*.sh
-build
+# SO versioned files
+*.so.*

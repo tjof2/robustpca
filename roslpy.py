@@ -6,7 +6,7 @@ import timeit
 from numpy.ctypeslib import ndpointer
 
 # Load the library
-librosl = ctypes.cdll.LoadLibrary('./librosl.so')
+librosl = ctypes.cdll.LoadLibrary('./libpyrosl.so.0.1')
 pyrosl = librosl.pyROSL
 
 pyrosl.restype = None
