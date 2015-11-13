@@ -2,9 +2,9 @@
 
 Last updated: 13/11/2015
 
-C++ implementation of Robust Orthonormal Subspace Learning (ROSL) using the Armadillo linear algebra library.
+C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the Armadillo linear algebra library.
 
-> Xianbiao Shu, Fatih Porikli, Narendra Ahuja. "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". 
+> [1] Xianbiao Shu, Fatih Porikli, Narendra Ahuja. "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". 
 > *Proc. of International Conference on Computer Vision and Pattern Recognition (CVPR)*, **2014**
 
 ## Contents
@@ -29,7 +29,7 @@ $ cd rosl
 ```
 
 The next step is to configure the build, and then compile it. This will generate a C++
-library `librosl.so`:
+library called `librosl.so`:
 
 ```
 make
