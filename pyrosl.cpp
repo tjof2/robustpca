@@ -80,8 +80,10 @@ void ROSL::runROSL(arma::mat *X) {
 	D.reset();
 	alpha.reset();
 	
-	// Read out the final error	
-	std::cout<<"Final error: "<<arma::norm(*X - A - E,"fro")/arma::norm(*X,"fro")<<std::endl;
+	// Read out the final error
+	if(verbose) {	
+		std::cout<<"Final error: "<<arma::norm(*X - A - E,"fro")/arma::norm(*X,"fro")<<std::endl;
+	}
 	return;
 };
 
@@ -138,7 +140,9 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 		stopcrit = arma::norm(*X - A - E, "fro") / fronorm;
 				
 		// Report progress
-		std::cout<<"   Iteration: "<<i+1<<", Rank: "<<D.n_cols<<", Error: "<<std::fixed<<std::setprecision(6)<<stopcrit<<std::endl;
+		if(verbose) {
+			std::cout<<"   Iteration: "<<i+1<<", Rank: "<<D.n_cols<<", Error: "<<std::fixed<<std::setprecision(6)<<stopcrit<<std::endl;
+		}
 											
 		// Exit if stop criteria is met
 		if(stopcrit < tol) {					
@@ -204,7 +208,9 @@ inline void ROSL::InexactALM_RLR(arma::mat *X) {
 		stopcrit = arma::norm(*X - A - E, "fro") / fronorm;
 				
 		// Report progress
-		std::cout<<"   Iteration: "<<i+1<<", Rank: "<<D.n_cols<<", Error: "<<std::fixed<<std::setprecision(6)<<stopcrit<<std::endl;
+		if(verbose) {
+			std::cout<<"   Iteration: "<<i+1<<", Rank: "<<D.n_cols<<", Error: "<<std::fixed<<std::setprecision(6)<<stopcrit<<std::endl;
+		}
 											
 		// Exit if stop criteria is met
 		if(stopcrit < tol) {					
@@ -275,13 +281,13 @@ inline void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
 // This is the Python/C interface using ctypes
 //		- Need to be C-style for simplicity
 //		- Couldn't get ArmaNpy to work (12/11/15)
-void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int mode, int subsample) {
+void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int mode, int subsample, bool verbose) {
 	
 	// Create class instance
 	ROSL *pyrosl = new ROSL();
 	
 	// First pass the parameters (the easy bit!)
-	pyrosl->Parameters(R, lambda, tol, iter, mode, subsample);
+	pyrosl->Parameters(R, lambda, tol, iter, mode, subsample, verbose);
 	
 	/////////////////////
 	//                 //
@@ -295,12 +301,14 @@ void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double l
 	// Remember also that Armadillo stores in column-major order
 	arma::mat X(xPy, m, n, false, false);
 	
-	// Now run and time ROSL
+	// Now run and time ROSL	
 	auto timerS1 = std::chrono::steady_clock::now();
 		pyrosl->runROSL(&X);
 	auto timerE1 = std::chrono::steady_clock::now();
 	auto elapsed1 = std::chrono::duration_cast<std::chrono::microseconds>(timerE1 - timerS1);
-	std::cout<<"Total time: "<<std::setprecision(5)<<(elapsed1.count()/1E6)<<" seconds"<<std::endl<<std::endl;	
+	if(verbose) {
+		std::cout<<"Total time: "<<std::setprecision(5)<<(elapsed1.count()/1E6)<<" seconds"<<std::endl<<std::endl;	
+	}
 		
 	// Now copy the data back to return to Python	
 	pyrosl->getA(aPy, m*n);

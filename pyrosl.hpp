@@ -49,6 +49,7 @@ class DLLEXPORT ROSL {
 			tol 	= 1E-6;
 			maxIter = 100;
 			S 		= 100;
+			verbose = false;
 		};
 		~ROSL(){
 			D.reset();
@@ -64,13 +65,14 @@ class DLLEXPORT ROSL {
 		void runROSL(arma::mat *X);	
 		
 		// Set parameters
-		void Parameters(int rankEstimate, double lambdaParameter, double tolerance, int maxiterations, int usermethod, int subsampling) {
+		void Parameters(int rankEstimate, double lambdaParameter, double tolerance, int maxiterations, int usermethod, int subsampling, bool verb) {
 			method 	= usermethod;
 			R 		= rankEstimate;
 			lambda 	= lambdaParameter;
 			tol 	= tolerance;
 			maxIter = maxiterations;
 			S 		= subsampling;
+			verbose = verb;
 			return;
 		};
 		
@@ -99,17 +101,18 @@ class DLLEXPORT ROSL {
 		// User parameters
 		int method, R, S, maxIter;
 		double lambda, tol;
+		bool verbose;
 
 		// Basic parameters	
 		int rank;
-		double mu;
+		double mu;	
 		
 		// Armadillo matrices		
 		arma::mat D, A, E, alpha, Z, Etmp, error;	
 };
 
 extern "C" {
-	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int mode, int subsample);
+	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int mode, int subsample, bool verbose);
 }
 
 #endif

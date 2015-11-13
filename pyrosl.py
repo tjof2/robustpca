@@ -55,13 +55,13 @@ def rosl(D, method='full', sampling=-1, rank=5, reg=0.01, tol=1E-5, iters=50, ve
                        ctypes.c_int, ctypes.c_int,
                        ctypes.c_int, ctypes.c_double,
                        ctypes.c_double, ctypes.c_int,
-                       ctypes.c_int, ctypes.c_int]
+                       ctypes.c_int, ctypes.c_int, ctypes.c_bool]
                        
     # Now run it with the users parameters
-    if method == 'full':             
-        pyrosl(D, A, E, m, n, rank, reg, tol, iters, 0, sampling)
+    if method == 'full':       
+        pyrosl(D, A, E, m, n, rank, reg, tol, iters, 0, sampling, verbose)
     elif method == 'subsample':
-        pyrosl(D, A, E, m, n, rank, reg, tol, iters, 1, sampling)
+        pyrosl(D, A, E, m, n, rank, reg, tol, iters, 1, sampling, verbose)
     
     # Return the results
     return (A, E)
