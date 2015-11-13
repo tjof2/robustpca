@@ -16,11 +16,6 @@ where **E** is the sparse error term.
 > *Proc. of International Conference on Computer Vision and Pattern Recognition (CVPR)*, **2014**<br/>
 > http://dx.doi.org/10.1109/CVPR.2014.495
 
-## Contents
-
-+ [Installation](#installation)
-+ [Using ROSL](#using-rosl)
-
 ## Installation
 
 **Dependencies**
