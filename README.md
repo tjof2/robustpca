@@ -16,7 +16,7 @@ C++ implementation of Robust Orthonormal Subspace Learning (ROSL)[1] using the A
 
 **Dependencies**
 
-PGURE-SVT makes use of the **[Armadillo](http://arma.sourceforge.net)** C++ linear algebra library, 
+ROSL makes use of the **[Armadillo](http://arma.sourceforge.net)** C++ linear algebra library, 
 which needs to be installed first.
 
 **Building from source**
