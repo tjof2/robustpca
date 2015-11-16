@@ -1,79 +1,114 @@
-import os, sys, warnings
+"""Robust Orthonormal Subspace Learning
+"""
+
 import ctypes
 import numpy as np
 from numpy.ctypeslib import ndpointer
 
-# Load the library
-librosl = ctypes.cdll.LoadLibrary('./librosl.so.0.1')
-pyrosl = librosl.pyROSL
+class ROSL(object):
 
-# Python wrapper for rather obtuse C function
-#
-#     method   = string      - 'full'     : Use full data matrix
-#                              'subsample': Use a subset of the data (ROSL+ algorithm), 
-#                                            with size defined by the'sampling' option
-#
-#     sampling = (int, int)  - How much of the data matrix to use for ROSL+ in cols and rows
-#
-#     rank     = integer     - Initial estimate of data dimensionality
-#
-#     reg      = double      - Regularization parameter on l1-norm (sparse error term)
-#
-#     tol      = double      - Stopping criterion for iterative algorithm
-#
-#     iters    = integer     - Maximum number of iterations
-#
-#     verbose  = boolean     - Show or hide C++ output
-#
-def rosl(D, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-5, iters=50, verbose=False):
- 
-    # Get size of D
-    m, n = D.shape
- 
-    # Check for Fortran-ordered array
-    if np.isfortran(D) is False:
-        print 'Warning: D must be arranged in Fortran-order in memory'
-        print '         Convert using numpy.asfortranarray(D)'
-        return
-    # Sanity-check of user parameters
-    elif method == 'subsample':
-        if sampling[0] == -1 or sampling[1] == -1:
-            print 'Warning: Method \'subsample\' selected, but option \'sampling\' is not set'
-            return
-    elif method == 'subsample' and sampling > (m, n):
-        print 'Warning: Method \'subsample\' selected, but option \'sampling\' is greater than D dimensions'
-        return
+    """Robust Orthonormal Subspace Learning Python wrapper.
+
+    ***Full description here.***
+
+    Parameters
+    ----------
+    method : string, optional
+        if method == 'full' (default), use full data matrix
+        if method == 'subsample', use a subset of the data with a size defined
+            by the 'sampling' keyword argument (ROSL+ algorithm).
+
+    sampling : tuple (n_cols, n_rows), required if 'method' == 'subsample'
+        The size of the data matrix used in the ROSL+ algorithm.
+
+    rank : int, optional
+        Initial estimate of data dimensionality.
+
+    reg : float, optional
+        Regularization parameter on l1-norm (sparse error term).
+
+    tol : float, optional
+        Stopping criterion for iterative algorithm.
+
+    iters : int, optional
+        Maximum number of iterations.
+
+    verbose : bool, optional
+        Show or hide the output from the C++ algorithm.
+
+    Attributes
+    ----------
+    model_ : array, [n_samples, n_features]
+        The results of the ROSL decomposition.
+
+    residuals_ : array, [n_components, n_features]
+        The error in the model.
+
+    """
+
+    def __init__(self, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-5, iters=50, verbose=False):
+
+        modes = {'full':0 , 'subsample': 1}
+        if method not in modes:
+            raise ValueError("'method' must be one of" + modes.keys())
+        self.method = method
+        self._mode = modes[method]
+        if method == 'subsample' and -1 in sampling:
+            raise ValueError("'method' is set to 'subsample' but 'sampling' is not set.")
+        self.sampling = sampling
+        self.rank = rank
+        self.reg = reg
+        self.tol = tol
+        self.iters = iters
+        self.verbose = verbose
+        self._pyrosl = ctypes.cdll.LoadLibrary('./librosl.so.0.1').pyROSL
+        self._pyrosl.restype = None
+        self._pyrosl.argtypes = [ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
+                           ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
+                           ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
+                           ctypes.c_int, ctypes.c_int,
+                           ctypes.c_int, ctypes.c_double,
+                           ctypes.c_double, ctypes.c_int,
+                           ctypes.c_int, ctypes.c_int,
+                           ctypes.c_int, ctypes.c_bool]
+
+    def fit_transform(self, X):
+        """Build a model of data X
         
-    # Convert method to mode
-    if method == 'full':
-        mode = 0
-    elif method == 'subsample':
-        mode = 1
+        Parameters
+        ----------
+        X : array [n_samples, n_features]
+            The data to be modelled
+        
+        Returns
+        -------
+        A : array [n_samples, n_features]
+            The data model
+        
+        E : array [n_samples, n_features]
+            The error in the data model
+        
+        """
+        X = self._check_array(X)
+        n_samples, n_features = X.shape
+        A = np.zeros((n_samples, n_features), dtype=np.double, order='F')
+        E = np.zeros((n_samples, n_features), dtype=np.double, order='F')
+        s1, s2 = self.sampling
+        self._pyrosl(X, A, E, n_samples, n_features, self.rank, self.reg, self.tol, self.iters, self._mode, s1, s2, self.verbose)
+        self.model_, self.residuals_ =  A, E
+        return A, E
 
-    # Create the low-rank and error matrices    
-    A = np.zeros((m, n), dtype=np.double, order='F')
-    E = np.zeros((m, n), dtype=np.double, order='F')
-    
-    # Setup the C function
-    pyrosl.restype = None
-    pyrosl.argtypes = [ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-                       ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-                       ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-                       ctypes.c_int, ctypes.c_int,
-                       ctypes.c_int, ctypes.c_double,
-                       ctypes.c_double, ctypes.c_int,
-                       ctypes.c_int, ctypes.c_int, 
-                       ctypes.c_int, ctypes.c_bool]
+    def _check_array(self, X):
+        """Sanity-checks the data and parameters.
+        
+        """
+        x = np.copy(X)
+        if np.isfortran(x) is False:
+            print "Array must be in Fortran-order. Converting now."
+            x = np.asfortranarray(x)
+        if self.sampling > x.shape:
+            raise ValueError("'sampling' is greater than the dimensions of X")
+        return x
 
-    # Now run it with the users parameters
-    pyrosl(D, A, E, m, n, rank, reg, tol, iters, mode, sampling[0], sampling[1], verbose)
-    
-    # Return the results
-    return (A, E)    
-    
-if __name__ == "__main__":
-    # Tell the user to run the proper test suite
-    print 'Run \'python test.py\' to test the build of pyrosl'
-    
-    
-    
+
+
