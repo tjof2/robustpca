@@ -61,7 +61,7 @@ class ROSL(object):
         self.tol = tol
         self.iters = iters
         self.verbose = verbose
-        self._pyrosl = ctypes.cdll.LoadLibrary('./librosl.so.0.1').pyROSL
+        self._pyrosl = ctypes.cdll.LoadLibrary('./librosl.so.0.2').pyROSL
         self._pyrosl.restype = None
         self._pyrosl.argtypes = [ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
                            ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),

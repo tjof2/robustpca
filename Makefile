@@ -4,7 +4,7 @@ LDFLAGS = -shared
 LFLAGS = -lopenblas -llapack -larmadillo
 
 MAJ_VERSION = 0
-MIN_VERSION = 1
+MIN_VERSION = 2
 
 TARGET = librosl.so.$(MAJ_VERSION).$(MIN_VERSION)
 SRCS = rosl.cpp
