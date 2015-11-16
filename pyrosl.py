@@ -95,7 +95,7 @@ class ROSL(object):
         E = np.zeros((n_samples, n_features), dtype=np.double, order='F')
         s1, s2 = self.sampling
         self._pyrosl(X, A, E, n_samples, n_features, self.rank, self.reg, self.tol, self.iters, self._mode, s1, s2, self.verbose)
-        self.loadings_, self.residuals_ =  A, E
+        self.model_, self.residuals_ =  A, E
         return A, E
 
     def _check_array(self, X):
