@@ -89,7 +89,7 @@ class ROSL(object):
             The error in the data model
         
         """
-        self._check_array(X)
+        X = self._check_array(X)
         n_samples, n_features = X.shape
         A = np.zeros((n_samples, n_features), dtype=np.double, order='F')
         E = np.zeros((n_samples, n_features), dtype=np.double, order='F')
@@ -103,10 +103,10 @@ class ROSL(object):
         
         """
         x = np.copy(X)
-        if np.isfortran(X) is False:
+        if np.isfortran(x) is False:
             print "Array must be in Fortran-order. Converting now."
             x = np.asfortranarray(x)
-        if self.sampling > X.shape:
+        if self.sampling > x.shape:
             raise ValueError("'sampling' is greater than the dimensions of X")
         return x
 
