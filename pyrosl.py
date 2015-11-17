@@ -46,7 +46,7 @@ class ROSL(object):
 
     """
 
-    def __init__(self, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-5, iters=50, verbose=False):
+    def __init__(self, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-6, iters=500, verbose=False):
 
         modes = {'full':0 , 'subsample': 1}
         if method not in modes:

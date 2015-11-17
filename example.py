@@ -3,43 +3,74 @@ import scipy.io
 import numpy as np
 import pyrosl
 
-print '---'
+"""
 
-# Load the data
-mat = scipy.io.loadmat('../Dataset.mat')
-D = np.array(mat['var2'], order='F')
-D = D.astype(np.double, copy = False)
+     Example usage of pyROSL
+
+     Last modified: 17/11/2015
+     
+"""
+
+# Parameters to create dataset
+n = 2000
+m = 2000
+rank = 5     # Actual rank
+p = 0.1      # Percentage of sparse errors
+
+# Parameters for ROSL
+regROSL = 0.03
+estROSL = 10
+
+# Parameters for ROSL+
+regROSLp = 0.05
+estROSLp = 10
+samplesp = (250, 250)
+
+
+#####################################
+# No need to modify below this line #
+#####################################
+
+# Basis
+U = np.random.randn(n, rank)
+V = np.random.randn(m, rank)
+R = np.dot(U, np.transpose(V))
+
+# Sparse errors
+E = -1000 + 1000 * np.random.rand(n, m)
+E = np.random.binomial(1, p, (n, m)) * E
+
+# Add the errors
+D = R + E
 
 # Run the sub-sampled version
+print ' '
 ss_rosl = pyrosl.ROSL( 
     method='subsample',
-    sampling = (72*72,500),
-    rank = 3,
-    reg = 0.02,
-    tol = 1E-5,
-    iters = 50,
+    sampling = samplesp,
+    rank = estROSLp,
+    reg = regROSLp,
+    iters = 100,
     verbose = True
 )
-
 ss_rosl.fit_transform(D)
-print '---'
 
 # Run the full ROSL algorithm
+print ' '
 full_rosl = pyrosl.ROSL(
     method = 'full',
-    rank = 3,
-    reg = 0.015,
+    rank = estROSL,
+    reg = regROSL,
+    verbose = True
    )
-print 'Starting ROSL'
 full_rosl.fit_transform(D)
-print 'Finished ROSL'
-print '---'
 
 # Output some numbers
-error1 = np.linalg.norm(D - ss_rosl.model_ - ss_rosl.residuals_, 'fro') / np.linalg.norm(D, 'fro')
-error2 = np.linalg.norm(D - full_rosl.model_ - full_rosl.residuals_, 'fro') / np.linalg.norm(D, 'fro')
+error1 = np.linalg.norm(R - ss_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
+error2 = np.linalg.norm(R - full_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
 error3 = np.linalg.norm(ss_rosl.model_ - full_rosl.model_, 'fro') / np.linalg.norm(full_rosl.model_, 'fro')
-print 'Subsampled ROSL+ error: %.3f' % error1
-print 'Full ROSL error:        %.3f' % error2
-print 'ROSL/ROSL+ comparison:  %.3f' % error3
+print '---'
+print 'Subsampled ROSL+ error: %.5f' % error1
+print 'Full ROSL error:        %.5f' % error2
+print 'ROSL/ROSL+ comparison:  %.5f' % error3
 print '---'
