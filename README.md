@@ -3,15 +3,11 @@ C++ implementation of Robust Principal Components Analysis (RPCA) using the Arma
 linear algebra library. A Python wrapper for interfacing with [HyperSpy](http://hyperspy.org/)
 is also included.
 
----
-
 ## Contents
 
 + [Description](#description)
 + [Installation](#installation)
 + [Usage](#usage)
-
----
 
 ## Description
 

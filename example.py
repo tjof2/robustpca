@@ -64,9 +64,12 @@ full_rosl = pyrosl.ROSL(
 full_rosl.fit_transform(X)
 
 # Output some numbers
-error1 = np.linalg.norm(R - ss_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
-error2 = np.linalg.norm(R - full_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
-error3 = np.linalg.norm(ss_rosl.model_ - full_rosl.model_, 'fro') / np.linalg.norm(full_rosl.model_, 'fro')
+ssmodel = np.dot(ss_rosl.basis_,ss_rosl.coeffs_)
+fullmodel = np.dot(full_rosl.basis_,full_rosl.coeffs_)
+
+error1 = np.linalg.norm(R - ssmodel, 'fro') / np.linalg.norm(R, 'fro')
+error2 = np.linalg.norm(R - fullmodel, 'fro') / np.linalg.norm(R, 'fro')
+error3 = np.linalg.norm(fullmodel - ssmodel, 'fro') / np.linalg.norm(fullmodel, 'fro')
 print '---'
 print 'Subsampled ROSL+ error: %.5f' % error1
 print 'Full ROSL error:        %.5f' % error2

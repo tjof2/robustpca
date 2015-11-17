@@ -62,8 +62,10 @@ class ROSL(object):
         self.iters = iters
         self.verbose = verbose
         self._pyrosl = ctypes.cdll.LoadLibrary('./librosl.so.0.2').pyROSL
-        self._pyrosl.restype = None
-        self._pyrosl.argtypes = [ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
+        self._pyrosl.restype = ctypes.c_int
+        self._pyrosl.argtypes = [
+                           ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
+                           ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
                            ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
                            ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
                            ctypes.c_int, ctypes.c_int,
@@ -82,8 +84,14 @@ class ROSL(object):
         
         Returns
         -------
-        A : array [n_samples, n_features]
-            The data model
+        R : int
+            The estimated rank
+        
+        D : array [n_samples, n_features]
+            The subspace basis
+            
+        alpha : array [n_samples, n_features]
+            The subspace coefficients
         
         E : array [n_samples, n_features]
             The error in the data model
@@ -91,12 +99,15 @@ class ROSL(object):
         """
         X = self._check_array(X)
         n_samples, n_features = X.shape
-        A = np.zeros((n_samples, n_features), dtype=np.double, order='F')
+        D = np.zeros((n_samples, n_features), dtype=np.double, order='F')
+        alpha = np.zeros((n_samples, n_features), dtype=np.double, order='F') 
         E = np.zeros((n_samples, n_features), dtype=np.double, order='F')
         s1, s2 = self.sampling
-        self._pyrosl(X, A, E, n_samples, n_features, self.rank, self.reg, self.tol, self.iters, self._mode, s1, s2, self.verbose)
-        self.model_, self.residuals_ =  A, E
-        return A, E
+        R = self._pyrosl(X, D, alpha, E, n_samples, n_features, self.rank, self.reg, self.tol, self.iters, self._mode, s1, s2, self.verbose)
+        
+        # This is where some trickery has to happen based on the value of R       
+        self.basis_, self.coeffs_, self.residuals_ =  D, alpha, E
+        return D, alpha, E
 
     def _check_array(self, X):
         """Sanity-checks the data and parameters.
