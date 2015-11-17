@@ -26,8 +26,8 @@ from the corrupted observation **X** according to:
 
 where **E** is the sparse error term.
 
-[1] X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices".[link](http://dx.doi.org/10.1109/CVPR.2014.495)<br/>
-[2] J Feng, H Xu and S Yan. (2013) "Online Robust PCA via Stochastic Optimization".[link](http://papers.nips.cc/paper/5131-online-robust-pca-via-stochastic-optimization.pdf)
+[1] X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". ([paper](http://dx.doi.org/10.1109/CVPR.2014.495))<br/>
+[2] J Feng, H Xu and S Yan. (2013) "Online Robust PCA via Stochastic Optimization" ([paper](http://papers.nips.cc/paper/5131-online-robust-pca-via-stochastic-optimization.pdf))
 
 ## Installation
 
