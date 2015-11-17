@@ -1,6 +1,6 @@
 CXX = /usr/bin/g++-4.8
 CXXFLAGS = -O3 -fPIC -Wall -std=c++11 -march=native
-LDFLAGS = -shared
+LDFLAGS = -shared 
 LFLAGS = -lopenblas -llapack -larmadillo
 
 MAJ_VERSION = 0
