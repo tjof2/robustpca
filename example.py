@@ -6,7 +6,6 @@ import pyrosl
 """
 
      Example usage of pyROSL
-
      Last modified: 17/11/2015
      
 """
@@ -26,7 +25,6 @@ regROSLp = 0.05
 estROSLp = 10
 samplesp = (250, 250)
 
-
 #####################################
 # No need to modify below this line #
 #####################################
@@ -41,7 +39,7 @@ E = -1000 + 1000 * np.random.rand(n, m)
 E = np.random.binomial(1, p, (n, m)) * E
 
 # Add the errors
-D = R + E
+X = R + E
 
 # Run the sub-sampled version
 print ' '
@@ -53,7 +51,7 @@ ss_rosl = pyrosl.ROSL(
     iters = 100,
     verbose = True
 )
-ss_rosl.fit_transform(D)
+ss_rosl.fit_transform(X)
 
 # Run the full ROSL algorithm
 print ' '
@@ -63,7 +61,7 @@ full_rosl = pyrosl.ROSL(
     reg = regROSL,
     verbose = True
    )
-full_rosl.fit_transform(D)
+full_rosl.fit_transform(X)
 
 # Output some numbers
 error1 = np.linalg.norm(R - ss_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
