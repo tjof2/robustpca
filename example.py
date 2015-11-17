@@ -8,7 +8,6 @@ import hyperspy.hspy as hs
 """
 
      Example usage of pyROSL
-
      Last modified: 17/11/2015
      
 """
@@ -28,7 +27,6 @@ regROSLp = 0.05
 estROSLp = 10
 samplesp = (250, 250)
 
-
 #####################################
 # No need to modify below this line #
 #####################################
@@ -44,7 +42,7 @@ E = -1000 + 1000 * np.random.rand(n, m)
 E = np.random.binomial(1, p, (n, m)) * E
 
 # Add the errors
-D = R + E
+X = R + E
 
 # Run the sub-sampled version
 print ' '
@@ -56,7 +54,7 @@ ss_rosl = pyrosl.ROSL(
     iters = 100,
     verbose = True
 )
-ss_rosl.fit_transform(D)
+ss_rosl.fit_transform(X)
 
 # Run the full ROSL algorithm
 print ' '
@@ -66,12 +64,15 @@ full_rosl = pyrosl.ROSL(
     reg = regROSL,
     verbose = True
    )
-full_rosl.fit_transform(D)
+full_rosl.fit_transform(X)
 
 # Output some numbers
-error1 = np.linalg.norm(R - ss_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
-error2 = np.linalg.norm(R - full_rosl.model_, 'fro') / np.linalg.norm(R, 'fro')
-error3 = np.linalg.norm(ss_rosl.model_ - full_rosl.model_, 'fro') / np.linalg.norm(full_rosl.model_, 'fro')
+ssmodel = np.dot(ss_rosl.basis_,ss_rosl.coeffs_)
+fullmodel = np.dot(full_rosl.basis_,full_rosl.coeffs_)
+
+error1 = np.linalg.norm(R - ssmodel, 'fro') / np.linalg.norm(R, 'fro')
+error2 = np.linalg.norm(R - fullmodel, 'fro') / np.linalg.norm(R, 'fro')
+error3 = np.linalg.norm(fullmodel - ssmodel, 'fro') / np.linalg.norm(fullmodel, 'fro')
 print '---'
 print 'Subsampled ROSL+ error: %.5f' % error1
 print 'Full ROSL error:        %.5f' % error2

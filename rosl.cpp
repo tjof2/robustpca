@@ -77,13 +77,12 @@ void ROSL::runROSL(arma::mat *X) {
 	Z.reset();
 	Etmp.reset();
 	error.reset();
-	D.reset();
-	alpha.reset();
+	A.reset();
 
 	return;
 };
 
-inline void ROSL::InexactALM_ROSL(arma::mat *X) {
+void ROSL::InexactALM_ROSL(arma::mat *X) {
 	int m = (*X).n_rows;
 	int n = (*X).n_cols;
 	int precision = (int)std::abs(std::log10(tol))+2;
@@ -144,7 +143,7 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 			if(verbose) {
 				std::cout<<"---------------------------------------------------------"<<std::endl;
 				std::cout<<"   ROSL iterations: "<<i+1<<std::endl;
-				std::cout<<"        Final rank: "<<D.n_cols<<std::endl;
+				std::cout<<"    Estimated rank: "<<D.n_cols<<std::endl;
 				std::cout<<"       Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
 				std::cout<<"---------------------------------------------------------"<<std::endl;
 			}			
@@ -155,14 +154,14 @@ inline void ROSL::InexactALM_ROSL(arma::mat *X) {
 	// Report convergence warning
 	std::cout<<"---------------------------------------------------------"<<std::endl;
 	std::cout<<"   WARNING: ROSL did not converge in "<<roslIters<<" iterations"<<std::endl;
-	std::cout<<"            Final rank:  "<<D.n_cols<<std::endl;
-	std::cout<<"            Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
+	std::cout<<"            Estimated rank:  "<<D.n_cols<<std::endl;
+	std::cout<<"               Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
 	std::cout<<"---------------------------------------------------------"<<std::endl;
 	
 	return;		
 };
 
-inline void ROSL::InexactALM_RLR(arma::mat *X) {
+void ROSL::InexactALM_RLR(arma::mat *X) {
 	int m = (*X).n_rows;
 	int n = (*X).n_cols;
 	int precision = (int)std::abs(std::log10(tol))+2;
@@ -225,7 +224,7 @@ inline void ROSL::InexactALM_RLR(arma::mat *X) {
 			if(verbose) {
 				std::cout<<"---------------------------------------------------------"<<std::endl;
 				std::cout<<"    RLR iterations: "<<i+1<<std::endl;
-				std::cout<<"        Final rank: "<<D.n_cols<<std::endl;
+				std::cout<<"    Estimated rank: "<<D.n_cols<<std::endl;
 				std::cout<<"       Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
 				std::cout<<"---------------------------------------------------------"<<std::endl;
 			}					
@@ -236,14 +235,14 @@ inline void ROSL::InexactALM_RLR(arma::mat *X) {
 	// Report convergence warning
 	std::cout<<"---------------------------------------------------------"<<std::endl;
 	std::cout<<"   WARNING: RLR did not converge in "<<rlrIters<<" iterations"<<std::endl;
-	std::cout<<"            Final rank:  "<<D.n_cols<<std::endl;
-	std::cout<<"            Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
+	std::cout<<"            Estimated rank:  "<<D.n_cols<<std::endl;
+	std::cout<<"               Final error: "<<std::fixed<<std::setprecision(precision)<<stopcrit<<std::endl;
 	std::cout<<"---------------------------------------------------------"<<std::endl;
 	
 	return;	
 };
 
-inline void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
+void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
 	// Get current rank estimate
 	rank = D.n_cols;
 
@@ -302,7 +301,7 @@ inline void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
 
 // This is the Python/C interface using ctypes
 //		- Needs to be C-style for simplicity
-void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsamplel, int subsampleh, bool verbose) {
+int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsamplel, int subsampleh, bool verbose) {
 	
 	// Create class instance
 	ROSL *pyrosl = new ROSL();
@@ -333,15 +332,20 @@ void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double l
 	if(verbose) {		
 		std::cout<<"Total time: "<<std::setprecision(5)<<(elapsed1.count()/1E6)<<" seconds"<<std::endl;
 	}
-		
+
+	// Get the estimated rank
+	int rankEst = pyrosl->getR();
+
 	// Now copy the data back to return to Python	
-	pyrosl->getA(aPy);
+	pyrosl->getD(dPy, m, n);
+	pyrosl->getAlpha(alphaPy, m, n);
 	pyrosl->getE(ePy);
 	
 	// Free memory
 	delete pyrosl;
 	
-	return;
+	// Return the rank
+	return rankEst;
 }
 
 

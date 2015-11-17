@@ -79,27 +79,39 @@ class DLLEXPORT ROSL {
 			return;
 		};
 		
-		void getA(double *aPy) {
-			  memcpy(aPy, A.memptr(), A.n_elem*sizeof(double));
-			  A.reset();
-			  return;
+		void getD(double *dPy, int m, int n) {
+			D.resize(m, n);
+			memcpy(dPy, D.memptr(), D.n_elem*sizeof(double));
+			D.reset();
+			return;
+		};
+		
+		void getAlpha(double *alphaPy, int m, int n) {
+			alpha.resize(m, n);
+			memcpy(alphaPy, alpha.memptr(), alpha.n_elem*sizeof(double));
+			alpha.reset();
+			return;
 		};
 		
 		void getE(double *ePy) {
-			 memcpy(ePy, E.memptr(), E.n_elem*sizeof(double));
-			 E.reset();
-			 return;
+			memcpy(ePy, E.memptr(), E.n_elem*sizeof(double));
+			E.reset();
+			return;
 		};
+		
+		int getR() {
+			return D.n_cols;		
+		}
 				
 	private:
 		// Solve full ROSL via inexact Augmented Lagrangian Multiplier method
-		inline void InexactALM_ROSL(arma::mat *X);
+		void InexactALM_ROSL(arma::mat *X);
 		
 		// Robust linear regression for ROSL+ via inexact Augmented Lagrangian Multiplier method		
-		inline void InexactALM_RLR(arma::mat *X);
+		void InexactALM_RLR(arma::mat *X);
 		
 		// Dictionary shrinkage for full ROSL
-		inline void LowRankDictionaryShrinkage(arma::mat *X);
+		void LowRankDictionaryShrinkage(arma::mat *X);
 
 		// User parameters
 		int method, R, Sl, Sh, maxIter;
@@ -117,7 +129,7 @@ class DLLEXPORT ROSL {
 // This is the Python/C interface using ctypes
 //		- Needs to be C-style for simplicity
 extern "C" {
-	void pyROSL(double *xPy, double *aPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsamplel, int subsampleh, bool verbose);
+	int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n, int R, double lambda, double tol, int iter, int method, int subsamplel, int subsampleh, bool verbose);
 }
 
 #endif
