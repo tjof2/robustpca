@@ -46,7 +46,7 @@ class ROSL(object):
 
     """
 
-    def __init__(self, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-6, iters=500, verbose=False):
+    def __init__(self, method='full', sampling=(-1,-1), rank=5, reg=0.01, tol=1E-6, iters=500, verbose=True):
 
         modes = {'full':0 , 'subsample': 1}
         if method not in modes:
@@ -103,7 +103,7 @@ class ROSL(object):
         alpha = np.zeros((n_samples, n_features), dtype=np.double, order='F') 
         E = np.zeros((n_samples, n_features), dtype=np.double, order='F')
         s1, s2 = self.sampling
-        R = self._pyrosl(X, D, alpha, E, n_samples, n_features, self.rank, self.reg, self.tol, self.iters, self._mode, s1, s2, self.verbose)
+        self.rank = self._pyrosl(X, D, alpha, E, n_samples, n_features, self.rank, self.reg, self.tol, self.iters, self._mode, s1, s2, self.verbose)
         
         # This is where some trickery has to happen based on the value of R       
         self.basis_, self.coeffs_, self.residuals_ =  D, alpha, E
