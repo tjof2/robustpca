@@ -54,7 +54,7 @@ ss_rosl = pyrosl.ROSL(
     iters = 100,
     verbose = True
 )
-ss_rosl.fit_transform(X)
+ss_loadings = ss_rosl.fit_transform(X)
 
 # Run the full ROSL algorithm
 print ' '
@@ -64,11 +64,11 @@ full_rosl = pyrosl.ROSL(
     reg = regROSL,
     verbose = True
    )
-full_rosl.fit_transform(X)
+full_loadings = full_rosl.fit_transform(X)
 
 # Output some numbers
-ssmodel = np.dot(ss_rosl.basis_,ss_rosl.coeffs_)
-fullmodel = np.dot(full_rosl.basis_,full_rosl.coeffs_)
+ssmodel = np.dot(ss_loadings, ss_rosl.components_)
+fullmodel = np.dot(full_loadings, full_rosl.components_)
 
 error1 = np.linalg.norm(R - ssmodel, 'fro') / np.linalg.norm(R, 'fro')
 error2 = np.linalg.norm(R - fullmodel, 'fro') / np.linalg.norm(R, 'fro')
