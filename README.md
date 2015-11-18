@@ -12,13 +12,13 @@ is also included.
 ## Description
 
 Two algorithms are included: 
-+ Robust Orthonormal Subspace Learning (ROSL)[1]
-+ Online Robust PCA (OR-PCA)[2]
++ Robust Orthonormal Subspace Learning (ROSL) [1]
++ Online Robust PCA (OR-PCA) [2]
 
 ROSL solves the robust PCA problem, recovering a low-rank matrix **A**
 from the corrupted observation **X** according to:
 
-<img src="http://i.imgur.com/HMXYTQo.png" width="400">
+<img src="http://i.imgur.com/76Wse2e.png" width="360">
 
 where **E** is the sparse error term.
 
