@@ -2,6 +2,8 @@ import os, sys, warnings
 import scipy.io
 import numpy as np
 import pyrosl
+from hyperspy import signals
+import hyperspy.hspy as hs
 
 """
 
@@ -28,6 +30,7 @@ samplesp = (250, 250)
 #####################################
 # No need to modify below this line #
 #####################################
+
 
 # Basis
 U = np.random.randn(n, rank)
