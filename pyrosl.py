@@ -9,7 +9,21 @@ class ROSL(object):
 
     """Robust Orthonormal Subspace Learning Python wrapper.
 
-    ***Full description here.***
+    Robust Orthonormal Subspace Learning (ROSL) seeks to recover a low-rank matrix A
+    and a sparse error matrix E from a corrupted observation X:
+    
+        min ||A||_* + lambda ||E||_1    subject to X = A + E
+        
+    where ||.||_* is the nuclear norm, and ||.||_1 is the l1-norm. ROSL further models
+    the low-rank matrix A as spanning an orthonormal subspace D with coefficients alpha
+    
+        A = D*alpha
+    
+    Further information can be found in the paper:
+    
+        X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: 
+        Efficient Recovery of Corrupted Low-rank Matrices"
+        http://dx.doi.org/10.1109/CVPR.2014.495           
 
     Parameters
     ----------
