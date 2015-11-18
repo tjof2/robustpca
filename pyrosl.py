@@ -61,7 +61,7 @@ class ROSL(object):
         self.tol = tol
         self.iters = iters
         self.verbose = verbose
-        libpath = os.path.dirname(os.path.relpath(__file__)) + '/librosl.so.0.2'
+        libpath = os.path.dirname(os.path.abspath(__file__)) + '/librosl.so.0.2'
         self._pyrosl = ctypes.cdll.LoadLibrary(libpath).pyROSL
         self._pyrosl.restype = ctypes.c_int
         self._pyrosl.argtypes = [
@@ -110,7 +110,7 @@ class ROSL(object):
         """
         
         loadings, components, error = self._fit(X)
-        loadings = loadings[:, self.rank_]
+        loadings = loadings[:, :self.rank_]
         
         return loadings
     
