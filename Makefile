@@ -1,6 +1,5 @@
-# Current fix because it won't work with GCC 5.2
-#CXX = g++
-CXX = /usr/bin/g++-4.8
+# Compiler
+CXX = g++
 
 # Compiler needs to be C++11-enabled
 CXXFLAGS = -O3 -fPIC -Wall -std=c++11 -march=native
