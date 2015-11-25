@@ -1,13 +1,13 @@
-# Compiler
+# C++ compiler
 CXX = g++
 
-# Compiler needs to be C++11-enabled
+# Compiler needs to be C++11-enabled, try -O2 or -O3
 CXXFLAGS = -O3 -fPIC -Wall -std=c++11 -march=native
 
-# Build a shared library and locate OpenBLAS
+# Build a shared library
 LDFLAGS = -shared
 
-# Link to BLAS (or replacement)
+# Link to BLAS (or replacement), LAPACK, and Armadillo
 LFLAGS = -lopenblas -llapack -larmadillo
 
 #####################################
