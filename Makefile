@@ -4,7 +4,7 @@ CXX = g++
 # Compiler needs to be C++11-enabled
 CXXFLAGS = -O3 -fPIC -Wall -std=c++11 -march=native
 
-# Build a shared library
+# Build a shared library and locate OpenBLAS
 LDFLAGS = -shared
 
 # Link to BLAS (or replacement)
