@@ -1,7 +1,7 @@
 # Robust PCA
-C++ implementation of Robust Principal Components Analysis (RPCA) using the Armadillo 
-linear algebra library. A Python wrapper for interfacing with [HyperSpy](http://hyperspy.org/)
-is also included.
+C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo 
+linear algebra library. A Python wrapper for interfacing with the [HyperSpy](http://hyperspy.org/)
+multidimensional analysis toolbox is also included.
 
 ## Contents
 
@@ -11,19 +11,16 @@ is also included.
 
 ## Description
 
-Two algorithms are included: 
-+ Robust Orthonormal Subspace Learning (ROSL) [1]
-+ **Not yet implemented** Online Robust PCA (OR-PCA) [2]
-
+This is a C++ implementation of the Robust Orthonormal Subspace Learning (ROSL) algorithm [1].
 ROSL solves the robust PCA problem, recovering a low-rank matrix **A**
 from the corrupted observation **X** according to:
 
 <img src="http://i.imgur.com/76Wse2e.png" width="360">
 
-where **E** is the sparse error term.
+where **E** is the sparse error term. ROSL incorporates a memory-efficient method for recovering **A** from a sub-sample
+of the matrix **X**.
 
 [1] X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". ([paper](http://dx.doi.org/10.1109/CVPR.2014.495))<br/>
-[2] J Feng, H Xu and S Yan. (2013) "Online Robust PCA via Stochastic Optimization" ([paper](http://papers.nips.cc/paper/5131-online-robust-pca-via-stochastic-optimization.pdf))
 
 ## Installation
 
@@ -75,4 +72,6 @@ $ python example.py
 
 Further documentation can be found in the file `pyrosl.py`.
 
+## Todo
 
++ Write tests
