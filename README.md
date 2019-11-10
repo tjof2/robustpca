@@ -1,7 +1,6 @@
 # Robust PCA
 C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo
-linear algebra library. A Python wrapper for interfacing with the [HyperSpy](http://hyperspy.org/)
-multidimensional analysis toolbox is also included.
+linear algebra library.
 
 ## Contents
 
