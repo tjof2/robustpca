@@ -1,0 +1,11 @@
+[run]
+source = robustpca
+include = */robustpca/*
+omit =
+     *__init__.py*
+     *tests*
+     *version.py*
+
+[report]
+precision = 2
+sort = Cover

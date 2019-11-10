@@ -10,13 +10,9 @@ LDFLAGS = -shared
 # Link to BLAS (or replacement), LAPACK, and Armadillo
 LFLAGS = -lopenblas -llapack -larmadillo
 
-#####################################
-# No need to modify below this line #
-#####################################
-
 # Versioning
 MAJ_VERSION = 0
-MIN_VERSION = 2
+MIN_VERSION = 3
 
 # Build target
 TARGET = librosl.so.$(MAJ_VERSION).$(MIN_VERSION)
@@ -28,7 +24,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(LDFLAGS) $^ $(LFLAGS) -o $@
-	
+
 .PHONY: clean
 clean:
 	rm *~ *.so* *.o
