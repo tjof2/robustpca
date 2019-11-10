@@ -21,12 +21,12 @@ import numpy as np
 from pyrosl import ROSL
 
 if __name__ == "__main__":
-
     # Parameters to create dataset
     n = 2000
     m = 2000
     rank = 5  # Actual rank
     p = 0.1  # Percentage of sparse errors
+    seed = 12  # Random seed
 
     # Parameters for ROSL
     regROSL = 0.03
@@ -37,36 +37,44 @@ if __name__ == "__main__":
     estROSLp = 10
     samplesp = (250, 250)
 
+    rng = np.random.RandomState(seed)
+
     # Basis
-    U = np.random.randn(n, rank)
-    V = np.random.randn(m, rank)
+    U = rng.randn(n, rank)
+    V = rng.randn(m, rank)
     R = np.dot(U, np.transpose(V))
 
     # Sparse errors
-    E = -1000 + 1000 * np.random.rand(n, m)
-    E = np.random.binomial(1, p, (n, m)) * E
+    E = -1000 + 1000 * rng.rand(n, m)
+    E = rng.binomial(1, p, (n, m)) * E
 
     # Add the errors
     X = R + E
 
     # Run the sub-sampled version
     ss_rosl = ROSL(
+        n_components=estROSLp,
         method="subsample",
         sampling=samplesp,
-        rank=estROSLp,
-        reg=regROSLp,
-        iters=100,
+        lambda1=regROSLp,
+        max_iter=1000,
         verbose=True,
     )
-    ss_loadings = ss_rosl.fit_transform(X)
+    _ = ss_rosl.fit_transform(X)
 
     # Run the full ROSL algorithm
-    full_rosl = ROSL(method="full", rank=estROSL, reg=regROSL, verbose=True)
-    full_loadings = full_rosl.fit_transform(X)
+    full_rosl = ROSL(
+        n_components=estROSL,
+        method="full",
+        lambda1=regROSL,
+        max_iter=1000,
+        verbose=True,
+    )
+    _ = full_rosl.fit_transform(X)
 
     # Output some numbers
-    ssmodel = np.dot(ss_loadings, ss_rosl.components_)
-    fullmodel = np.dot(full_loadings, full_rosl.components_)
+    ssmodel = ss_rosl.model_
+    fullmodel = full_rosl.model_
 
     error1 = np.linalg.norm(R - ssmodel, "fro") / np.linalg.norm(R, "fro")
     error2 = np.linalg.norm(R - fullmodel, "fro") / np.linalg.norm(R, "fro")
