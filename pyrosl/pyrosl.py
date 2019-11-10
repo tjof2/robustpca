@@ -75,15 +75,15 @@ def _cpp_rosl(
         ctypes.c_bool,
     ]
 
-    loadings = np.zeros(X.shape, dtype=np.double, order="F")
-    components = np.zeros(X.shape, dtype=np.double, order="F")
+    D = np.zeros(X.shape, dtype=np.double, order="F")
+    alpha = np.zeros(X.shape, dtype=np.double, order="F")
     E = np.zeros(X.shape, dtype=np.double, order="F")
 
     s1, s2 = sampling
-    n_components = self._pyrosl(
+    _ = self._pyrosl(
         X,
-        loadings,
-        components,
+        D,
+        alpha,
         E,
         n_samples,
         n_features,
@@ -97,10 +97,10 @@ def _cpp_rosl(
         verbose,
     )
 
-    return X, E, loadings, components, n_components
+    return D, alpha, E
 
 
-class ROSL(object):
+class ROSL(BaseEstimator, TransformerMixin):
 
     """ Robust Orthonormal Subspace Learning Python wrapper.
 
@@ -143,7 +143,7 @@ class ROSL(object):
         Maximum number of iterations.
 
     verbose : bool, optional
-        Show or hide the output from the C++ algorithm.
+        Show or hide the output from the algorithm.
 
     use_cpp : bool, optional
         Use C++ algorithm instead of Python.
@@ -168,6 +168,7 @@ class ROSL(object):
         max_iter=500,
         verbose=True,
         use_cpp=False,
+        random_state=None,
     ):
         self.n_components = n_components
         self.method = method
@@ -177,6 +178,7 @@ class ROSL(object):
         self.max_iter = max_iter
         self.verbose = verbose
         self.use_cpp = use_cpp
+        self.random_state = random_state
 
     def _fit(self, X):
         """ Build a model of data X
@@ -198,7 +200,7 @@ class ROSL(object):
         X = check_array(X, dtype=float)
 
         if self.use_cpp:
-            Y, E, loadings, components, n_components = _cpp_rosl(
+            D, alpha, E = _cpp_rosl(
                 X,
                 n_components=self.n_components,
                 method=self.method,
@@ -210,18 +212,21 @@ class ROSL(object):
             )
 
         self.n_components_ = n_components
-        self.components_ = components[:n_components]
+        self.loadings_ = D[:, : self.n_components_]
+        self.components_ = alpha[: self.n_components]
         self.residuals_ = E
+        self.model_ = D.dot(A)
 
-        return loadings, components
+        return self.loadings_, self.components_
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         """ Build a model of data X
 
         Parameters
         ----------
         X : array [n_samples, n_features]
             The data to be modelled.
+        y : Ignored
 
         Returns
         -------
@@ -233,13 +238,14 @@ class ROSL(object):
 
         return self
 
-    def fit_transform(self, X):
+    def fit_transform(self, X, y=None):
         """ Build a model of data X and apply it to data X
 
         Parameters
         ----------
         X : array [n_samples, n_features]
             The data to be modelled.
+        y : Ignored
 
         Returns
         -------
@@ -247,14 +253,13 @@ class ROSL(object):
             The model coefficients.
 
         """
-
         loadings, components = self._fit(X)
-        loadings = loadings[:, :n_components]
+        loadings = loadings[:, : self.n_components_]
 
         return loadings
 
     def transform(self, Y):
-        """ Apply the learned model to data Y
+        """ Apply the learned model to data Y.
 
         Parameters
         ----------
