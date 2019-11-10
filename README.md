@@ -1,5 +1,5 @@
 # Robust PCA
-C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo 
+C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo
 linear algebra library. A Python wrapper for interfacing with the [HyperSpy](http://hyperspy.org/)
 multidimensional analysis toolbox is also included.
 
@@ -26,7 +26,7 @@ of the matrix **X**.
 
 **Dependencies**
 
-This library makes use of the **[Armadillo](http://arma.sourceforge.net)** C++ linear algebra library, 
+This library makes use of the **[Armadillo](http://arma.sourceforge.net)** C++ linear algebra library,
 which needs to be installed first. It is recommended that you use a high-speed replacement for
 LAPACK and BLAS such as OpenBLAS, MKL or ACML; more information can be found in the [Armadillo
 FAQs](http://arma.sourceforge.net/faq.html#dependencies).
@@ -51,7 +51,7 @@ parameters:
 ```python
 import pyrosl
 
-example_rosl = pyrosl.ROSL( 
+example_rosl = pyrosl.ROSL(
     method='full',
     rank = 5,
     reg = 0.1
