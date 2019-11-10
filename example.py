@@ -16,67 +16,67 @@
 # You should have received a copy of the GNU General Public License
 # along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, warnings
-import scipy.io
 import numpy as np
-import pyrosl
-from hyperspy import signals
-import hyperspy.hspy as hs
 
+from pyrosl import ROSL
 
-# Parameters to create dataset
-n = 2000
-m = 2000
-rank = 5  # Actual rank
-p = 0.1  # Percentage of sparse errors
+if __name__ == "__main__":
 
-# Parameters for ROSL
-regROSL = 0.03
-estROSL = 10
+    # Parameters to create dataset
+    n = 2000
+    m = 2000
+    rank = 5  # Actual rank
+    p = 0.1  # Percentage of sparse errors
 
-# Parameters for ROSL+
-regROSLp = 0.05
-estROSLp = 10
-samplesp = (250, 250)
+    # Parameters for ROSL
+    regROSL = 0.03
+    estROSL = 10
 
-# Basis
-U = np.random.randn(n, rank)
-V = np.random.randn(m, rank)
-R = np.dot(U, np.transpose(V))
+    # Parameters for ROSL+
+    regROSLp = 0.05
+    estROSLp = 10
+    samplesp = (250, 250)
 
-# Sparse errors
-E = -1000 + 1000 * np.random.rand(n, m)
-E = np.random.binomial(1, p, (n, m)) * E
+    # Basis
+    U = np.random.randn(n, rank)
+    V = np.random.randn(m, rank)
+    R = np.dot(U, np.transpose(V))
 
-# Add the errors
-X = R + E
+    # Sparse errors
+    E = -1000 + 1000 * np.random.rand(n, m)
+    E = np.random.binomial(1, p, (n, m)) * E
 
-# Run the sub-sampled version
-ss_rosl = pyrosl.ROSL(
-    method="subsample",
-    sampling=samplesp,
-    rank=estROSLp,
-    reg=regROSLp,
-    iters=100,
-    verbose=True,
-)
-ss_loadings = ss_rosl.fit_transform(X)
+    # Add the errors
+    X = R + E
 
-# Run the full ROSL algorithm
-full_rosl = pyrosl.ROSL(method="full", rank=estROSL, reg=regROSL, verbose=True)
-full_loadings = full_rosl.fit_transform(X)
+    # Run the sub-sampled version
+    ss_rosl = ROSL(
+        method="subsample",
+        sampling=samplesp,
+        rank=estROSLp,
+        reg=regROSLp,
+        iters=100,
+        verbose=True,
+    )
+    ss_loadings = ss_rosl.fit_transform(X)
 
-# Output some numbers
-ssmodel = np.dot(ss_loadings, ss_rosl.components_)
-fullmodel = np.dot(full_loadings, full_rosl.components_)
+    # Run the full ROSL algorithm
+    full_rosl = ROSL(method="full", rank=estROSL, reg=regROSL, verbose=True)
+    full_loadings = full_rosl.fit_transform(X)
 
-error1 = np.linalg.norm(R - ssmodel, "fro") / np.linalg.norm(R, "fro")
-error2 = np.linalg.norm(R - fullmodel, "fro") / np.linalg.norm(R, "fro")
-error3 = np.linalg.norm(fullmodel - ssmodel, "fro") / np.linalg.norm(fullmodel, "fro")
-print(
-    "---"
-    f"Subsampled ROSL+ error: {error1:.5f}"
-    f"Full ROSL error:        {error2:.5f}"
-    f"ROSL/ROSL+ comparison:  {error3:.5f}"
-    "---"
-)
+    # Output some numbers
+    ssmodel = np.dot(ss_loadings, ss_rosl.components_)
+    fullmodel = np.dot(full_loadings, full_rosl.components_)
+
+    error1 = np.linalg.norm(R - ssmodel, "fro") / np.linalg.norm(R, "fro")
+    error2 = np.linalg.norm(R - fullmodel, "fro") / np.linalg.norm(R, "fro")
+    error3 = np.linalg.norm(fullmodel - ssmodel, "fro") / np.linalg.norm(
+        fullmodel, "fro"
+    )
+    print(
+        "---"
+        f"Subsampled ROSL+ error: {error1:.5f}"
+        f"Full ROSL error:        {error2:.5f}"
+        f"ROSL/ROSL+ comparison:  {error3:.5f}"
+        "---"
+    )
