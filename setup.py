@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 Tom Furnival
+# Copyright 2015-2019 Tom Furnival
 #
 # This file is part of RobustPCA.
 #
@@ -20,13 +20,13 @@
 from setuptools import setup, find_packages
 
 try:
-    with open("robustpca/__init__.py", "r") as f:
+    with open("pyrosl/__init__.py", "r") as f:
         exec(f.read())
 except Exception as e:
     print(f"Encountered {type(e).__name__}: {e.args}")
 
 setup(
-    name="robustpca",
+    name="pyrosl",
     version=__version__,
     description="Robust Orthonormal Subspace Learning in Python.",
     author=__author__,
@@ -38,6 +38,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -48,8 +49,5 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[],
-    package_data={
-        "": ["LICENSE", "readme.rst", "requirements.txt"],
-        "robustpca": ["*.py"],
-    },
+    package_data={"": ["LICENSE", "README.md", "requirements.txt"], "pyrosl": ["*.py"]},
 )
