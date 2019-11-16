@@ -19,7 +19,7 @@
 import numpy as np
 import pytest
 
-from pyrosl import ROSL
+from robustpca import ROSL
 
 DEFAULT_TOL = 5e-3
 

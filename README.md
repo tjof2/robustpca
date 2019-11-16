@@ -1,4 +1,4 @@
-# Robust PCA (pyROSL)
+# Robust PCA
 Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
 
 ## Contents
@@ -39,7 +39,7 @@ $ cd robustpca/src
 $ make
 ```
 
-This will generate a C++ library called `librosl.so`, which is called by the Python module `pyrosl`.
+This will generate a C++ library called `librosl.so`, which is called by the Python module `robustpca`.
 
 ## Usage
 _To be completed_

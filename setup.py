@@ -20,15 +20,15 @@
 from setuptools import setup, find_packages
 
 try:
-    with open("pyrosl/__init__.py", "r") as f:
+    with open("robustpca/__init__.py", "r") as f:
         exec(f.read())
 except Exception as e:
     print(f"Encountered {type(e).__name__}: {e.args}")
 
 setup(
-    name="pyrosl",
+    name="robustpca",
     version=__version__,
-    description="Robust Orthonormal Subspace Learning in Python.",
+    description="Robust PCA implementations in Python.",
     author=__author__,
     author_email=__email__,
     license="GPLv3",
@@ -49,5 +49,8 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[],
-    package_data={"": ["LICENSE", "README.md", "requirements.txt"], "pyrosl": ["*.py"]},
+    package_data={
+        "": ["LICENSE", "README.md", "requirements.txt"],
+        "robustpca": ["*.py"],
+    },
 )
