@@ -1,4 +1,4 @@
-# Robust PCA (pyROSL)
+# Robust PCA
 Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
 
 ## Contents
@@ -35,37 +35,11 @@ To build the library, unpack the source and `cd` into the unpacked directory, th
 
 ```bash
 $ tar -xzf robustpca.tar.gz
-$ cd rosl
+$ cd robustpca/src
 $ make
 ```
 
-This will generate a C++ library called `librosl.so`, which is called by the Python module `pyrosl`.
+This will generate a C++ library called `librosl.so`, which is called by the Python module `robustpca`.
 
 ## Usage
-
-For a corrupted observation matrix **X**, one can run the ROSL algorithm with the following required
-parameters:
-
-```python
-import pyrosl
-
-example_rosl = pyrosl.ROSL(
-    method='full',
-    rank = 5,
-    reg = 0.1
-)
-example_rosl.fit_transform(X)
-
-A = example_rosl.model_
-E = example_rosl.residuals_
-
-```
-
-A simple Python script is included with examples of both ROSL and the fast ROSL+ algorithms, as well
-as further optional parameters. It can be run on the command line with:
-
-```bash
-$ python example.py
-```
-
-Further documentation can be found in the file `pyrosl.py`.
+_To be completed_

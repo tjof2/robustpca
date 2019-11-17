@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 Tom Furnival
+# Copyright 2015-2019 Tom Furnival
 #
 # This file is part of RobustPCA.
 #
@@ -28,7 +28,7 @@ except Exception as e:
 setup(
     name="robustpca",
     version=__version__,
-    description="Robust Orthonormal Subspace Learning in Python.",
+    description="Robust PCA implementations in Python.",
     author=__author__,
     author_email=__email__,
     license="GPLv3",
@@ -38,6 +38,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -49,7 +50,7 @@ setup(
     packages=find_packages(),
     install_requires=[],
     package_data={
-        "": ["LICENSE", "readme.rst", "requirements.txt"],
+        "": ["LICENSE", "README.md", "requirements.txt"],
         "robustpca": ["*.py"],
     },
 )
