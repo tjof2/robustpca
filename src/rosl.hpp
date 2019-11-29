@@ -1,36 +1,20 @@
 /***************************************************************************
+Copyright (C) 2015-2019 Tom Furnival
 
-	C++ Robust Orthonormal Subspace Learning
+This file is part of RobustPCA.
 
-	Author:	Tom Furnival
-	Email:	tjof2@cam.ac.uk
+RobustPCA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-	Copyright (C) 2015-2019 Tom Furnival
+RobustPCA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-	This is a C++ implementation of Robust Orthonormal Subspace Learning (ROSL)
-	and its fast variant, ROSL+, based on the MATLAB implementation by Xianbiao
-	Shu et al. [1].
-
-	References:
-	[1] 	"Robust Orthonormal Subspace Learning: Efficient Recovery of
-			Corrupted Low-rank Matrices", (2014), Shu, X et al.
-			http://dx.doi.org/10.1109/CVPR.2014.495
-
-	This file is part of RobustPCA.
-
-	RobustPCA is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-
-	RobustPCA is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
-
+You should have received a copy of the GNU General Public License
+along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #ifndef _ROSL_HPP_
@@ -57,7 +41,6 @@
 class DLLEXPORT ROSL {
 public:
   ROSL() {
-    // Initialize default class parameters
     method = 0;
     Sl = 100;
     Sh = 100;
@@ -68,7 +51,6 @@ public:
     verbose = false;
   };
   ~ROSL() {
-    // Clear memory
     D.reset();
     E.reset();
     A.reset();
@@ -142,8 +124,7 @@ private:
   arma::mat D, A, E, alpha, Z, Etmp, error;
 };
 
-// This is the Python/C interface using ctypes
-//		- Needs to be C-style for simplicity
+// This is the Python/C interface using ctypes (needs to be C-style for simplicity)
 extern "C" {
 int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
            int R, double lambda, double tol, int iter, int method,

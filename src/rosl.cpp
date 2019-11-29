@@ -1,39 +1,22 @@
 /***************************************************************************
+Copyright (C) 2015-2019 Tom Furnival
 
-	C++ Robust Orthonormal Subspace Learning
+This file is part of RobustPCA.
 
-	Author:	Tom Furnival
-	Email:	tjof2@cam.ac.uk
+RobustPCA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-	Copyright (C) 2015-2019 Tom Furnival
+RobustPCA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-	This is a C++ implementation of Robust Orthonormal Subspace Learning (ROSL)
-	and its fast variant, ROSL+, based on the MATLAB implementation by Xianbiao
-	Shu et al. [1].
-
-	References:
-	[1] 	"Robust Orthonormal Subspace Learning: Efficient Recovery of
-			Corrupted Low-rank Matrices", (2014), Shu, X et al.
-			http://dx.doi.org/10.1109/CVPR.2014.495
-
-	This file is part of RobustPCA.
-
-	RobustPCA is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-
-	RobustPCA is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
-
+You should have received a copy of the GNU General Public License
+along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-// ROSL header
 #include "rosl.hpp"
 
 void ROSL::runROSL(arma::mat *X) {
@@ -162,31 +145,21 @@ void ROSL::InexactALM_ROSL(arma::mat *X) {
 
     // Exit if stop criteria is met
     if (stopcrit < tol) {
-      // Report progress
       if (verbose) {
-        std::cout << "---------------------------------------------------------"
-                  << std::endl;
         std::cout << "   ROSL iterations: " << i + 1 << std::endl;
         std::cout << "    Estimated rank: " << D.n_cols << std::endl;
         std::cout << "       Final error: " << std::fixed
                   << std::setprecision(precision) << stopcrit << std::endl;
-        std::cout << "---------------------------------------------------------"
-                  << std::endl;
       }
       return;
     }
   }
 
-  // Report convergence warning
-  std::cout << "---------------------------------------------------------"
-            << std::endl;
   std::cout << "   WARNING: ROSL did not converge in " << roslIters
             << " iterations" << std::endl;
   std::cout << "            Estimated rank:  " << D.n_cols << std::endl;
   std::cout << "               Final error: " << std::fixed
             << std::setprecision(precision) << stopcrit << std::endl;
-  std::cout << "---------------------------------------------------------"
-            << std::endl;
 
   return;
 };
@@ -251,31 +224,21 @@ void ROSL::InexactALM_RLR(arma::mat *X) {
 
     // Exit if stop criteria is met
     if (stopcrit < tol) {
-      // Report progress
       if (verbose) {
-        std::cout << "---------------------------------------------------------"
-                  << std::endl;
         std::cout << "    RLR iterations: " << i + 1 << std::endl;
         std::cout << "    Estimated rank: " << D.n_cols << std::endl;
         std::cout << "       Final error: " << std::fixed
                   << std::setprecision(precision) << stopcrit << std::endl;
-        std::cout << "---------------------------------------------------------"
-                  << std::endl;
       }
       return;
     }
   }
 
-  // Report convergence warning
-  std::cout << "---------------------------------------------------------"
-            << std::endl;
   std::cout << "   WARNING: RLR did not converge in " << rlrIters
             << " iterations" << std::endl;
   std::cout << "            Estimated rank:  " << D.n_cols << std::endl;
   std::cout << "               Final error: " << std::fixed
             << std::setprecision(precision) << stopcrit << std::endl;
-  std::cout << "---------------------------------------------------------"
-            << std::endl;
 
   return;
 };
@@ -337,8 +300,7 @@ void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
   return;
 };
 
-// This is the Python/C interface using ctypes
-//		- Needs to be C-style for simplicity
+// This is the Python/C interface using ctypes (needs to be C-style for simplicity)
 int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
            int R, double lambda, double tol, int iter, int method,
            int subsamplel, int subsampleh, bool verbose) {
@@ -357,24 +319,24 @@ int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
   /////////////////////
 
   // This is the dangerous bit - we want to avoid copying, so set up the
-  // Armadillo
-  // data matrix to DIRECTLY read from auxiliary memory, but be careful, this is
-  // also writable!!!
+  // Armadillo data matrix to DIRECTLY read from auxiliary memory,
+  // but be careful, this is also writable!!!
   // Remember also that Armadillo stores in column-major order
   arma::mat X(xPy, m, n, false, false);
 
   // Time ROSL
-  auto timerS1 = std::chrono::steady_clock::now();
+  auto t0 = std::chrono::high_resolution_clock::now();
 
   // Run ROSL
   pyrosl->runROSL(&X);
 
-  auto timerE1 = std::chrono::steady_clock::now();
-  auto elapsed1 =
-      std::chrono::duration_cast<std::chrono::microseconds>(timerE1 - timerS1);
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+
   if (verbose) {
     std::cout << "Total time: " << std::setprecision(5)
-              << (elapsed1.count() / 1E6) << " seconds" << std::endl;
+              << elapsed / 1E6 << " seconds" << std::endl;
   }
 
   // Get the estimated rank
