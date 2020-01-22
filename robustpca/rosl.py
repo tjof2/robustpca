@@ -80,7 +80,7 @@ def _cpp_rosl(
     E = np.zeros(X.shape, dtype=np.double, order="F")
 
     s1, s2 = sampling
-    _ = self._pyrosl(
+    _ = pyrosl(
         X,
         D,
         alpha,
