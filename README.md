@@ -1,6 +1,8 @@
 # Robust PCA
 Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
 
+[![Build Status](https://travis-ci.org/tjof2/robustpca.svg?branch=master)](https://travis-ci.org/tjof2/robustpca)
+
 ## Contents
 
 + [Description](#description)
@@ -43,3 +45,7 @@ This will generate a C++ library called `librosl.so`, which is called by the Pyt
 
 ## Usage
 _To be completed_
+
+Copyright (C) 2015-2020 Tom Furnival.
+robustpca-SVT is released free of charge under the GNU General Public License (GPLv3).
+
