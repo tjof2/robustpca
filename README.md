@@ -46,6 +46,5 @@ This will generate a C++ library called `librosl.so`, which is called by the Pyt
 ## Usage
 _To be completed_
 
-Copyright (C) 2015-2020 Tom Furnival.
-robustpca-SVT is released free of charge under the GNU General Public License (GPLv3).
+Copyright (C) 2015-2020 Tom Furnival. robustpca is released free of charge under the GNU General Public License (GPLv3).
 
