@@ -2,6 +2,7 @@
 Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
 
 [![Build Status](https://travis-ci.org/tjof2/robustpca.svg?branch=master)](https://travis-ci.org/tjof2/robustpca)
+[![DOI](https://zenodo.org/badge/46107795.svg)](https://zenodo.org/badge/latestdoi/46107795)
 
 ## Contents
 
