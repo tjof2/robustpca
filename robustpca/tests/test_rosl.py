@@ -54,6 +54,7 @@ class TestROSL:
         self.E = E
         self.X = self.R + self.E
         self.rng = rng
+        self.seed = seed
         self.card = m * n
 
     def _verify_norms(self, A, B, tol=1e-3):
@@ -64,7 +65,7 @@ class TestROSL:
             assert np.linalg.norm(A - B, norm) < tol
 
     def test_full(self):
-        rosl = ROSL(n_components=10, lambda1=0.03)
+        rosl = ROSL(n_components=10, lambda1=0.03, random_state=self.seed)
         _ = rosl.fit_transform(self.X)
         self._verify_norms(self.R, rosl.model_)
         self._verify_norms(self.E, rosl.residuals_)
@@ -76,6 +77,7 @@ class TestROSL:
             sampling=self.sampling,
             lambda1=self.reg_s,
             max_iter=1000,
+            random_state=self.seed,
         )
         _ = rosl.fit_transform(self.X)
         self._verify_norms(self.R, rosl.model_)

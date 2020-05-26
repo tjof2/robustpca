@@ -32,7 +32,6 @@
 #define DLLEXPORT
 #endif
 
-#include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <random>
@@ -43,42 +42,34 @@
 class DLLEXPORT ROSL
 {
 public:
-  ROSL()
+  ROSL(const double lambda,
+       const double tol,
+       const uint32_t method,
+       const uint32_t maxRank,
+       const uint32_t maxIter,
+       const uint32_t sampleL,
+       const uint32_t sampleH,
+       const int randomSeed) : lambda(lambda),
+                               tol(tol),
+                               method(method),
+                               maxRank(maxRank),
+                               maxIter(maxIter),
+                               sampleL(sampleL),
+                               sampleH(sampleH),
+                               randomSeed(randomSeed)
   {
-    method = 0;
-    Sl = 100;
-    Sh = 100;
-    R = 5;
-    lambda = 0.02;
-    tol = 1E-6;
-    maxIter = 100;
-    verbose = false;
+    precision = (uint32_t)std::abs(std::log10(tol)) + 3; // Will print 3 decimal places
   };
+
   ~ROSL()
   {
     D.reset();
     E.reset();
     A.reset();
-    alpha.reset();
     Z.reset();
-    Etmp.reset();
+    alpha.reset();
+    tempE.reset();
     error.reset();
-  };
-
-  // Set parameters
-  void Parameters(uint32_t rankEstimate, double lambdaParameter, double tolerance,
-                  uint32_t maxiterations, uint32_t usermethod, uint32_t subsamplingl,
-                  uint32_t subsamplingh, bool verb)
-  {
-    method = usermethod;
-    Sl = subsamplingl;
-    Sh = subsamplingh;
-    R = rankEstimate;
-    lambda = lambdaParameter;
-    tol = tolerance;
-    maxIter = maxiterations;
-    verbose = verb;
-    return;
   };
 
   // Full ROSL for data matrix X
@@ -86,6 +77,15 @@ public:
   {
     uint32_t m = X.n_rows;
     uint32_t n = X.n_cols;
+
+    if (randomSeed < 0)
+    {
+      arma::arma_rng::set_seed_random();
+    }
+    else
+    {
+      arma::arma_rng::set_seed(randomSeed);
+    }
 
     switch (method)
     {
@@ -96,27 +96,21 @@ public:
       arma::uvec rowAll, colAll, rowSample, colSample;
       arma::mat Xperm;
 
-      arma::arma_rng::set_seed_random();
+      rowAll = (sampleH == m) ? arma::linspace<arma::uvec>(0, m - 1, m)
+                              : arma::shuffle(arma::linspace<arma::uvec>(0, m - 1, m));
+      colAll = (sampleL == n) ? arma::linspace<arma::uvec>(0, n - 1, n)
+                              : arma::shuffle(arma::linspace<arma::uvec>(0, n - 1, n));
 
-      rowAll = (Sh == m) ? arma::linspace<arma::uvec>(0, m - 1, m)
-                         : arma::shuffle(arma::linspace<arma::uvec>(0, m - 1, m));
-      colAll = (Sl == n) ? arma::linspace<arma::uvec>(0, n - 1, n)
-                         : arma::shuffle(arma::linspace<arma::uvec>(0, n - 1, n));
-
-      rowSample = (Sh == m) ? rowAll : arma::join_vert(rowAll.subvec(0, Sh - 1), arma::sort(rowAll.subvec(Sh, m - 1)));
-      colSample = (Sl == n) ? colAll : arma::join_vert(colAll.subvec(0, Sl - 1), arma::sort(colAll.subvec(Sl, n - 1)));
+      rowSample = (sampleH == m) ? rowAll : arma::join_vert(rowAll.subvec(0, sampleH - 1), arma::sort(rowAll.subvec(sampleH, m - 1)));
+      colSample = (sampleL == n) ? colAll : arma::join_vert(colAll.subvec(0, sampleL - 1), arma::sort(colAll.subvec(sampleL, n - 1)));
 
       Xperm = X.rows(rowSample);
       Xperm = Xperm.cols(colSample);
 
-      // Take the columns and solve the small ROSL problem
-      InexactALM_ROSL(Xperm.cols(0, Sl - 1));
+      InexactALM_ROSL(Xperm.cols(0, sampleL - 1)); // Take the columns and solve the small ROSL problem
+      InexactALM_RLR(Xperm.rows(0, sampleH - 1));  // Now take the rows and do robust linear regression
 
-      // Now take the rows and do robust linear regression
-      InexactALM_RLR(Xperm.rows(0, Sh - 1));
-
-      // Free some memory
-      Xperm.reset();
+      Xperm.reset(); // Free some memory
 
       // Calculate low-rank component and error
       A = D * alpha;
@@ -129,9 +123,9 @@ public:
 
     // Free some memory
     Z.reset();
-    Etmp.reset();
-    error.reset();
     A.reset();
+    tempE.reset();
+    error.reset();
 
     return;
   };
@@ -144,10 +138,10 @@ public:
     return;
   };
 
-  void getAlpha(double *alphaPy, uint32_t m, uint32_t n)
+  void getAlpha(double *aPy, uint32_t m, uint32_t n)
   {
     alpha.resize(m, n);
-    memcpy(alphaPy, alpha.memptr(), alpha.n_elem * sizeof(double));
+    memcpy(aPy, alpha.memptr(), alpha.n_elem * sizeof(double));
     alpha.reset();
     return;
   };
@@ -159,29 +153,26 @@ public:
     return;
   };
 
-  uint32_t getR()
+  uint32_t getRank()
   {
     return D.n_cols;
   };
 
-private:
   void InexactALM_ROSL(const arma::mat &X)
   {
     uint32_t m = X.n_rows;
     uint32_t n = X.n_cols;
-    uint32_t precision = (uint32_t)std::abs(std::log10(tol)) + 2;
 
-    // Initialize A, Z, E, Etmp and error
+    // Initialize A, Z, E, tempE and error
     A.set_size(m, n);
     Z.set_size(m, n);
     E.set_size(m, n);
-    Etmp.set_size(m, n);
-    alpha.set_size(R, n);
-    D.set_size(m, R);
+    D.set_size(m, maxRank);
+    tempE.set_size(m, n);
+    alpha.set_size(maxRank, n);
     error.set_size(m, n);
 
     // Initialize alpha randomly
-    arma::arma_rng::set_seed_random();
     alpha.randu();
 
     // Set all other matrices
@@ -189,7 +180,7 @@ private:
     D.zeros();
     E.zeros();
     Z.zeros();
-    Etmp.zeros();
+    tempE.zeros();
 
     double infNorm, froNorm, ooFroNorm;
     infNorm = arma::norm(arma::vectorise(X), "inf");
@@ -207,38 +198,30 @@ private:
 
     for (size_t i = 0; i < maxIter; i++)
     {
-      // Error matrix and intensity thresholding
-      Etmp = X + Z - A;
-      E = arma::abs(Etmp) - lambda / mu;
-      E.transform([](double val) { return (val > 0.) ? val : 0.; });
-      E = E % arma::sign(Etmp);
+      // Error matrix thresholding
+      tempE = X + Z - A;
+      E = arma::abs(tempE) - lambda / mu;
+      E.transform([](double val) { return std::max(val, 0.0); });
+      E %= arma::sign(tempE);
 
-      // Perform the shrinkage
       LowRankDictionaryShrinkage(X);
 
-      // Update Z
-      Z = ooRho * (Z + X - A - E);
-      mu = (mu * rho < muBar) ? mu * rho : muBar;
+      Z = ooRho * (Z + X - A - E);    // Update Z
+      mu = std::min(mu * rho, muBar); // Update mu
 
-      // Calculate stop criterion
       stopCrit = arma::norm(X - A - E, "fro") * ooFroNorm;
-      roslIters = i + 1;
-
       if (stopCrit < tol)
       {
-        if (verbose)
-        {
-          printFixed(std::cout, precision,
-                     "ROSL iterations:  ", i + 1,
-                     "\nEstimated rank:   ", D.n_cols,
-                     "\nFinal error:      ", stopCrit);
-        }
+        printFixed(std::cout, precision,
+                   "ROSL iterations:  ", i + 1,
+                   "\nEstimated rank:   ", D.n_cols,
+                   "\nFinal error:      ", stopCrit);
         return;
       }
     }
 
     printFixed(std::cerr, precision,
-               "WARNING: ROSL did not converge in ", roslIters, " iterations",
+               "WARNING: ROSL did not converge in ", maxIter, " iterations",
                "\nEstimated rank:   ", D.n_cols,
                "\nFinal error:      ", stopCrit);
 
@@ -249,19 +232,18 @@ private:
   {
     uint32_t m = X.n_rows;
     uint32_t n = X.n_cols;
-    uint32_t precision = (uint32_t)std::abs(std::log10(tol)) + 2;
 
-    // Initialize A, Z, E, Etmp
+    // Initialize A, Z, E, tempE
     A.set_size(m, n);
     Z.set_size(m, n);
     E.set_size(m, n);
-    Etmp.set_size(m, n);
+    tempE.set_size(m, n);
 
     // Set all other matrices
     A = X;
     E.zeros();
     Z.zeros();
-    Etmp.zeros();
+    tempE.zeros();
 
     double infNorm, froNorm, ooFroNorm;
     infNorm = arma::norm(arma::vectorise(X), "inf");
@@ -277,52 +259,45 @@ private:
 
     double stopCrit;
 
+    // SVD variables
+    arma::mat Usvd, Vsvd;
+    arma::vec Ssvd;
+    arma::uvec Sshort;
+    uint32_t SV;
+
     for (size_t i = 0; i < maxIter; i++)
     {
       // Error matrix and intensity thresholding
-      Etmp = X + Z - A;
-      E = arma::abs(Etmp) - 1 / mu;
+      tempE = X + Z - A;
+      E = arma::abs(tempE) - 1 / mu;
       E.transform([](double val) { return (val > 0.) ? val : 0.; });
-      E = E % arma::sign(Etmp);
-
-      // SVD variables
-      arma::mat Usvd, Vsvd;
-      arma::vec Ssvd;
-      arma::uvec Sshort;
-      uint32_t SV;
+      E = E % arma::sign(tempE);
 
       // Given D and A...
-      arma::svd_econ(Usvd, Ssvd, Vsvd, D.rows(0, Sh - 1));
+      arma::svd_econ(Usvd, Ssvd, Vsvd, D.rows(0, sampleH - 1));
       Sshort = arma::find(Ssvd > 0.);
       SV = Sshort.n_elem;
       alpha = Vsvd.cols(0, SV - 1) * arma::diagmat(1. / Ssvd.subvec(0, SV - 1)) *
               arma::trans(Usvd.cols(0, SV - 1)) * (X + Z - E);
-      A = (D.rows(0, Sh - 1)) * alpha;
+      A = (D.rows(0, sampleH - 1)) * alpha;
 
       // Update Z
       Z = (Z + X - A - E) * ooRho;
       mu = (mu * rho < muBar) ? mu * rho : muBar;
 
-      // Calculate stop criterion
       stopCrit = arma::norm(X - A - E, "fro") * ooFroNorm;
-      rlrIters = i + 1;
-
-      // Exit if stop criteria is met
       if (stopCrit < tol)
       {
-        if (verbose)
-        {
-          printFixed(std::cout, precision,
-                     "RLR iterations:   ", i + 1,
-                     "\nEstimated rank:   ", D.n_cols,
-                     "\nFinal error:      ", stopCrit);
-        }
+        printFixed(std::cout, precision,
+                   "RLR iterations:   ", i + 1,
+                   "\nEstimated rank:   ", D.n_cols,
+                   "\nFinal error:      ", stopCrit);
         return;
       }
     }
 
     printFixed(std::cerr, precision,
-               "WARNING: RLR did not converge in ", rlrIters, " iterations",
+               "WARNING: RLR did not converge in ", maxIter, " iterations",
                "\nEstimated rank:   ", D.n_cols,
                "\nFinal error:      ", stopCrit);
 
@@ -354,11 +329,9 @@ private:
           D.col(i) = D.col(i) - D.col(j) * (arma::trans(D.col(j)) * D.col(i));
         }
 
-        // Normalize
-        D.col(i) /= arma::norm(D.col(i));
+        D.col(i) /= arma::norm(D.col(i)); // Normalize
 
-        // Compute alpha(i,:)
-        alpha.row(i) = arma::trans(D.col(i)) * error;
+        alpha.row(i) = arma::trans(D.col(i)) * error; // Compute alpha(i,:)
 
         // Magnitude thresholding
         alphaNorm(i) = arma::norm(alpha.row(i));
@@ -382,14 +355,15 @@ private:
     return;
   };
 
-  uint32_t method, R, Sl, Sh, maxIter;
+private:
   double lambda, tol;
-  bool verbose;
+  uint32_t method, maxRank, maxIter, sampleL, sampleH;
+  int randomSeed;
 
-  uint32_t rank, roslIters, rlrIters;
+  uint32_t precision, rank;
   double mu;
 
-  arma::mat D, A, E, alpha, Z, Etmp, error;
+  arma::mat D, A, E, alpha, Z, tempE, error;
 
   template <typename Arg, typename... Args>
   void print(std::ostream &out, Arg &&arg, Args &&... args)
@@ -411,17 +385,13 @@ extern "C"
 {
   // This is the Python/C interface using ctypes
   // (needs to be C-style for simplicity)
-  int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
-             int R, double lambda, double tol, int iter, int method,
-             int subsamplel, int subsampleh, bool verbose)
+  uint32_t pyROSL(double *xPy, double *dPy, double *aPy, double *ePy,
+                  double lambda, double tol,
+                  uint32_t m, uint32_t n, uint32_t maxRank,
+                  uint32_t iter, uint32_t method,
+                  uint32_t sampleL, uint32_t sampleH,
+                  int randomSeed)
   {
-
-    // Create class instance
-    ROSL *pyrosl = new ROSL();
-
-    // First pass the parameters (the easy bit!)
-    pyrosl->Parameters(R, lambda, tol, iter, method, subsamplel, subsampleh, verbose);
-
     // Copy the image sequence into arma::mat
     // This is the dangerous bit - we want to avoid copying, so set
     // up the Armadillo data matrix to DIRECTLY read from auxiliary
@@ -429,34 +399,18 @@ extern "C"
     // that Armadillo stores in column-major order.
     arma::mat X(xPy, m, n, false, false);
 
-    // Time ROSL
-    auto t0 = std::chrono::high_resolution_clock::now();
+    ROSL *est = new ROSL(lambda, tol, method, maxRank, iter, sampleL, sampleH, randomSeed);
+    est->runROSL(X);
 
-    // Run ROSL
-    pyrosl->runROSL(X);
+    // Fetch data to return to Python
+    uint32_t rankEstimate = est->getRank();
+    est->getD(dPy, m, n);
+    est->getAlpha(aPy, m, n);
+    est->getE(ePy);
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+    delete est; // Free memory
 
-    if (verbose)
-    {
-      std::cout << "Total time: " << std::setprecision(5)
-                << elapsed / 1E6 << " seconds" << std::endl;
-    }
-
-    // Get the estimated rank
-    uint32_t rankEst = pyrosl->getR();
-
-    // Now copy the data back to return to Python
-    pyrosl->getD(dPy, m, n);
-    pyrosl->getAlpha(alphaPy, m, n);
-    pyrosl->getE(ePy);
-
-    // Free memory
-    delete pyrosl;
-
-    // Return the rank
-    return rankEst;
+    return rankEstimate; // Return the rank
   }
 }
 

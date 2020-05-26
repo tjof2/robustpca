@@ -34,6 +34,7 @@ def _cpp_rosl(
     lambda1=1,
     tol=1e-6,
     max_iter=1e3,
+    random_state=None,
 ):
     if not np.isfortran(X):
         print("Array must be in Fortran-order. Converting now.")
@@ -73,16 +74,22 @@ def _cpp_rosl(
         ctypes.c_uint32,
         ctypes.c_uint32,
         ctypes.c_uint32,
+        ctypes.c_int,
     ]
 
     D = np.zeros(X.shape, dtype=np.double, order="F")
     A = np.zeros(X.shape, dtype=np.double, order="F")
     E = np.zeros(X.shape, dtype=np.double, order="F")
 
+    max_iter = int(max_iter)
+
     if sampling is not None:
         s1, s2 = sampling
     else:
         s1, s2 = n_samples, n_features
+
+    if random_state is None:
+        random_state = -1
 
     rank_est = pyrosl(
         X,
@@ -94,10 +101,11 @@ def _cpp_rosl(
         n_samples,
         n_features,
         n_components,
-        int(max_iter),
+        max_iter,
         _available_methods[method],
         s1,
         s2,
+        random_state,
     )
 
     return D, A, E, int(rank_est)
@@ -162,6 +170,7 @@ class ROSL(BaseEstimator, TransformerMixin):
         tol=1e-6,
         max_iter=500,
         copy=False,
+        random_state=None,
     ):
         self.n_components = n_components
         self.method = method
@@ -170,6 +179,7 @@ class ROSL(BaseEstimator, TransformerMixin):
         self.tol = tol
         self.max_iter = max_iter
         self.copy = copy
+        self.random_state = random_state
 
     def _fit(self, X):
         """ Build a model of data X
@@ -198,6 +208,7 @@ class ROSL(BaseEstimator, TransformerMixin):
             lambda1=self.lambda1,
             tol=self.tol,
             max_iter=self.max_iter,
+            random_state=self.random_state,
         )
 
         self.n_components_ = rank_est
