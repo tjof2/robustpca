@@ -9,15 +9,19 @@ before_install:
 matrix:
   include:
     - os: linux
+      env: COMPILER_NAME=gcc CXX=g++-7 CC=gcc-7
+      python: 3.7
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
           packages: ['g++-7', 'libblas-dev', 'liblapack-dev', 'libopenblas-dev']
-      env: COMPILER_NAME=gcc CXX=g++-7 CC=gcc-7
 
 script:
   - cd src
   - make CXX=$CXX
+  - cd ../
+  - pip install --upgrade -e .
+  - pytest--pyargs robustpca --cov=robustpca robustpca/"
 
 notifications:
   email: false
