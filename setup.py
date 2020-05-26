@@ -19,11 +19,7 @@
 
 from setuptools import find_packages, setup
 
-try:
-    with open("robustpca/__init__.py", "r") as f:
-        exec(f.read())
-except Exception as e:
-    print(f"Encountered {type(e).__name__}: {e.args}")
+exec(open("robustpca/__init__.py").read())
 
 setup(
     name="robustpca",
@@ -49,8 +45,5 @@ setup(
     ],
     packages=find_packages(),
     install_requires=["numpy>=1.16", "scikit-learn>=0.20"],
-    package_data={
-        "": ["LICENSE", "README.md", "requirements.txt"],
-        "robustpca": ["*.py"],
-    },
+    package_data={"": ["LICENSE", "README.md"], "robustpca": ["*.py"]},
 )

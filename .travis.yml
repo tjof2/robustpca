@@ -22,7 +22,7 @@ script:
   - cd ../
   - which python
   - pip install --upgrade -e .
-  - pytest --pyargs robustpca --cov=robustpca robustpca/"
+  - pytest --pyargs robustpca --cov=robustpca robustpca/
 
 notifications:
   email: false

@@ -370,7 +370,7 @@ private:
 
         // Magnitude thresholding
         alphaNorm(i) = arma::norm(alpha.row(i));
-        alphaNormThresh = (alphaNorm(i) - ooMu > 0.) ? alphaNorm(i) - ooMu : 0.;
+        alphaNormThresh = std::max(alphaNorm(i) - ooMu, 0.0);
         alpha.row(i) *= alphaNormThresh / alphaNorm(i);
         alphaNorm(i) = alphaNormThresh;
       }
