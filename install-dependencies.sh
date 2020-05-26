@@ -22,7 +22,6 @@ cd build_deps
 
 # Versions to install
 ARMA_VER="9.880.1"
-NLOP_VER="2.6.2"
 
 # Armadillo
 wget http://sourceforge.net/projects/arma/files/armadillo-${ARMA_VER}.tar.xz

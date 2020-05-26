@@ -40,7 +40,6 @@
 # PYC
 *.pyc
 
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -139,5 +138,4 @@ ENV/
 .pytest_cache/
 
 # Custom
-res/
-*.ipynb
+robustpca/_rosl.cpp

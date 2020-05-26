@@ -16,108 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with robustpca.  If not, see <http://www.gnu.org/licenses/>.
 
-import ctypes
-import os
-
 import numpy as np
-from numpy.ctypeslib import ndpointer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-
-def _cpp_rosl(
-    X,
-    n_components=None,
-    method="full",
-    sampling=None,
-    lambda1=None,
-    tol=1e-6,
-    max_iter=1e3,
-    random_state=None,
-):
-    if not np.isfortran(X):
-        X = np.asfortranarray(X)
-
-    n_samples, n_features = X.shape
-
-    if lambda1 is None:
-        lambda1 = 1.0 / np.sqrt(n_features)
-
-    if n_components is None:
-        n_components = n_features
-
-    _available_methods = {"full": 0, "subsample": 1}
-
-    if method not in _available_methods:
-        raise NotImplementedError(
-            f"'method' must be one of {_available_methods.keys()}"
-        )
-
-    if method == "subsample" and sampling is None:
-        raise ValueError("'method' is set to 'subsample' but 'sampling' is not set.")
-
-    libpath = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "../src/librosl.so"
-    )
-    pyrosl = ctypes.cdll.LoadLibrary(libpath).pyROSL
-    pyrosl.restype = ctypes.c_uint32
-    pyrosl.argtypes = [
-        ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-        ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-        ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-        ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-        ctypes.c_double,
-        ctypes.c_double,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_int,
-    ]
-
-    D = np.zeros(X.shape, dtype=np.double, order="F")
-    A = np.zeros(X.shape, dtype=np.double, order="F")
-    E = np.zeros(X.shape, dtype=np.double, order="F")
-
-    max_iter = int(max_iter)
-
-    if sampling is not None:
-        s1, s2 = sampling
-    else:
-        s1, s2 = n_samples, n_features
-
-    if random_state is None:
-        random_state = -1
-
-    rank_est = pyrosl(
-        X,
-        D,
-        A,
-        E,
-        lambda1,
-        tol,
-        n_samples,
-        n_features,
-        n_components,
-        max_iter,
-        _available_methods[method],
-        s1,
-        s2,
-        random_state,
-    )
-
-    return D, A, E, int(rank_est)
+from ._rosl import rosl_all
 
 
 class ROSL(BaseEstimator, TransformerMixin):
+    """Robust Orthonormal Subspace Learning (ROSL).
 
-    """ Robust Orthonormal Subspace Learning Python wrapper.
-
-    Robust Orthonormal Subspace Learning (ROSL) seeks to recover a low-rank matrix X
+    Robust Orthonormal Subspace Learning seeks to recover a low-rank matrix X
     and a sparse error matrix E from a corrupted observation Y:
 
         min ||X||_* + lambda ||E||_1    subject to Y = X + E
@@ -131,12 +41,10 @@ class ROSL(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    method : string, optional
-        if method == 'full' (default), use full data matrix
-        if method == 'subsample', use a subset of the data with a size defined
-            by the 'sampling' keyword argument (ROSL+ algorithm).
-    sampling : tuple (n_cols, n_rows), required if 'method' == 'subsample'
-        The size of the data matrix used in the ROSL+ algorithm.
+    subsampling : None or float or tuple(float, float)
+        * If None, use full data matrix
+        * If float, use a random fraction of the data (ROSL+ algorithm)
+        * If tuple of floats, use a random fraction of the columns and rows (ROSL+ algorithm)
     n_components : int, optional
         Initial estimate of data dimensionality.
     lambda1 : float
@@ -146,12 +54,17 @@ class ROSL(BaseEstimator, TransformerMixin):
         Stopping criterion for iterative algorithm. Default is 1e-6.
     max_iter : int
         Maximum number of iterations. Default is 500.
+    copy : bool, default False
+        If True, fit on a copy of the data.
+    random_seed : None or int
+        Random seed used to sample the data and initialize the starting point.
+        Default is None.
 
     Attributes
     ----------
-    model_ : array, [n_samples, n_features]
+    low_rank_ : array, [n_samples, n_features]
         The results of the ROSL decomposition.
-    residuals_ : array, [n_samples, n_features]
+    error_ : array, [n_samples, n_features]
         The error in the model.
 
     References
@@ -166,25 +79,23 @@ class ROSL(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         n_components=None,
-        method="full",
-        sampling=None,
+        subsampling=None,
         lambda1=0.01,
-        tol=1e-6,
         max_iter=500,
+        tol=1e-6,
         copy=False,
-        random_state=None,
+        random_seed=None,
     ):
         self.n_components = n_components
-        self.method = method
-        self.sampling = sampling
+        self.subsampling = subsampling
         self.lambda1 = lambda1
-        self.tol = tol
         self.max_iter = max_iter
+        self.tol = tol
         self.copy = copy
-        self.random_state = random_state
+        self.random_seed = random_seed
 
     def _fit(self, X):
-        """ Build a model of data X
+        """Build a model of data X.
 
         Parameters
         ----------
@@ -195,29 +106,71 @@ class ROSL(BaseEstimator, TransformerMixin):
         -------
         loadings : array [n_samples, n_features]
             The subspace coefficients
-
         components : array [n_components, n_features]
             The subspace basis
 
         """
         X = check_array(X, copy=self.copy, dtype=[np.float64, np.float32])
+        if not np.isfortran(X):
+            X = np.asfortranarray(X)
 
-        D, A, E, rank_est = _cpp_rosl(
+        self.n_samples, self.n_features = X.shape
+
+        if self.lambda1 is None:
+            self.lambda1_ = 1.0 / np.sqrt(self.n_features)
+        else:
+            self.lambda1_ = self.lambda1
+
+        if self.n_components is None:
+            self.n_components = self.n_features
+
+        self.max_iter = int(self.max_iter)
+
+        if self.subsampling is None:
+            sampling = False
+            s1, s2 = (1.0, 1.0)
+        elif isinstance(self.subsampling, tuple):
+            if len(self.subsampling) != 2:
+                raise ValueError(
+                    "Invalid subsampling parameter: got tuple of len="
+                    f"{len(self.subsampling)} instead of a tuple of len=2."
+                )
+            sampling = True
+            s1, s2 = self.subsampling
+        else:
+            sampling = True
+            s1 = self.subsampling
+            s2 = self.subsampling
+
+        if s1 > 1.0 or s1 < 0.0 or s2 > 1.0 or s2 < 0.0:
+            raise ValueError(
+                f"Invalid subsampling parameter: got {self.subsampling} "
+                "instead of a float or pair of floats between 0 and 1."
+            )
+
+        if self.random_seed is None:
+            # Negative integer used to seed randomly in C++
+            self.random_seed_ = -1
+        else:
+            self.random_seed_ = self.random_seed
+
+        A, E, D, B, rank_est = rosl_all(
             X,
-            n_components=self.n_components,
-            method=self.method,
-            sampling=self.sampling,
-            lambda1=self.lambda1,
-            tol=self.tol,
-            max_iter=self.max_iter,
-            random_state=self.random_state,
+            self.lambda1_,
+            self.tol,
+            sampling,
+            self.n_components,
+            self.max_iter,
+            s1,
+            s2,
+            self.random_seed_,
         )
 
-        self.n_components_ = rank_est
+        self.n_components_ = int(rank_est)
         self.loadings_ = D[:, : self.n_components_]
-        self.components_ = A[: self.n_components]
-        self.residuals_ = E
-        self.model_ = D @ A
+        self.components_ = B[: self.n_components_]
+        self.error_ = E
+        self.low_rank_ = A
 
         return self.loadings_, self.components_
 
