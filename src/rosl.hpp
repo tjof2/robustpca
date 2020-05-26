@@ -271,11 +271,6 @@ public:
       S_nz = arma::find(S_ > 0.);
       sV = std::max(static_cast<int>(S_nz.n_elem), 1) - 1;
 
-      // std::cout << D.rows(0, sampleH - 1).n_elem << std::endl
-      //           << S_.n_elem << std::endl
-      //           << S_nz.n_elem << std::endl
-      //           << sV << std::endl;
-
       alpha = V_.cols(0, sV) * arma::diagmat(1.0 / S_.subvec(0, sV)) * arma::trans(U_.cols(0, sV)) * (X + Z - E);
 
       A = (D.rows(0, sampleH - 1)) * alpha; // Update A
