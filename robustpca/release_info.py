@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with robustpca.  If not, see <http://www.gnu.org/licenses/>.
 
-from .rosl import ROSL
-
-__all__ = ["ROSL"]
+author = "Tom Furnival"
+copyright = "Copyright 2015-2020, Tom Furnival"
+credits = ["Tom Furnival"]
+license = "GPLv3"
+version = "0.3.0"
+maintainer = "Tom Furnival"
+email = "tjof2@cam.ac.uk"
+status = "Development"
+url = "https://github.com/tjof2/robustpca"

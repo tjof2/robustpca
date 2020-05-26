@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015-2020 Tom Furnival
 #
-# This file is part of RobustPCA.
+# This file is part of robustpca.
 #
-# RobustPCA is free software: you can redistribute it and/or modify
+# robustpca is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# RobustPCA is distributed in the hope that it will be useful,
+# robustpca is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
+# along with robustpca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from setuptools import find_packages, setup
 
-exec(open("robustpca/__init__.py").read())
+exec(open("robustpca/release_info.py").read())
 
 setup(
     name="robustpca",
-    version=__version__,
+    version=version,
     description="Robust PCA implementation in Python/C++",
-    author=__author__,
-    author_email=__email__,
-    license="GPLv3",
-    url="https://github.com/tjof2/robustpca",
+    author=author,
+    author_email=email,
+    license=license,
+    url=url,
     long_description=open("README.md").read(),
     classifiers=[
         "Programming Language :: Python :: 3",

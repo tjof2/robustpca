@@ -1,27 +1,25 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015-2020 Tom Furnival
 #
-# This file is part of RobustPCA.
+# This file is part of robustpca.
 #
-# RobustPCA is free software: you can redistribute it and/or modify
+# robustpca is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# RobustPCA is distributed in the hope that it will be useful,
+# robustpca is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
+# along with robustpca.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import pytest
 
 from robustpca import ROSL
-
-DEFAULT_TOL = 5e-3
 
 
 class TestROSL:
@@ -58,15 +56,12 @@ class TestROSL:
         self.rng = rng
         self.card = m * n
 
-    def _verify_norms(self, A, B, tol=DEFAULT_TOL):
+    def _verify_norms(self, A, B, tol=1e-3):
+        tol *= self.card
         assert A.shape == B.shape
 
         for norm in ["fro", 1]:
-            normX = np.linalg.norm(A - B, norm) / (self.card)
-            assert normX < tol
-
-            normE = np.linalg.norm(A - B, norm) / (self.card)
-            assert normE < tol
+            assert np.linalg.norm(A - B, norm) < tol
 
     def test_full(self):
         rosl = ROSL(n_components=10, lambda1=0.03)

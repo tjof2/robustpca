@@ -94,7 +94,7 @@ public:
       break;
     case 1: // For sub-sampled ROSL+
       arma::uvec rowAll, colAll, rowSample, colSample;
-      arma::mat Xperm, XpermTmp;
+      arma::mat Xperm;
 
       arma::arma_rng::set_seed_random();
 
@@ -110,19 +110,13 @@ public:
       Xperm = Xperm.cols(colSample);
 
       // Take the columns and solve the small ROSL problem
-      XpermTmp = Xperm.cols(0, Sl - 1);
-      InexactALM_ROSL(XpermTmp);
-
-      // Free some memory
-      XpermTmp.set_size(Sh, Sl);
+      InexactALM_ROSL(Xperm.cols(0, Sl - 1));
 
       // Now take the rows and do robust linear regression
-      XpermTmp = Xperm.rows(0, Sh - 1);
-      InexactALM_RLR(XpermTmp);
+      InexactALM_RLR(Xperm.rows(0, Sh - 1));
 
       // Free some memory
       Xperm.reset();
-      XpermTmp.reset();
 
       // Calculate low-rank component and error
       A = D * alpha;
@@ -234,20 +228,19 @@ private:
       {
         if (verbose)
         {
-          std::cout << "   ROSL iterations: " << i + 1 << std::endl;
-          std::cout << "    Estimated rank: " << D.n_cols << std::endl;
-          std::cout << "       Final error: " << std::fixed
-                    << std::setprecision(precision) << stopCrit << std::endl;
+          printFixed(std::cout, precision,
+                     "ROSL iterations:  ", i + 1,
+                     "\nEstimated rank:   ", D.n_cols,
+                     "\nFinal error:      ", stopCrit);
         }
         return;
       }
     }
 
-    std::cout << "   WARNING: ROSL did not converge in " << roslIters
-              << " iterations" << std::endl;
-    std::cout << "            Estimated rank:  " << D.n_cols << std::endl;
-    std::cout << "               Final error: " << std::fixed
-              << std::setprecision(precision) << stopCrit << std::endl;
+    printFixed(std::cerr, precision,
+               "WARNING: ROSL did not converge in ", roslIters, " iterations",
+               "\nEstimated rank:   ", D.n_cols,
+               "\nFinal error:      ", stopCrit);
 
     return;
   };
@@ -319,20 +312,19 @@ private:
       {
         if (verbose)
         {
-          std::cout << "    RLR iterations: " << i + 1 << std::endl;
-          std::cout << "    Estimated rank: " << D.n_cols << std::endl;
-          std::cout << "       Final error: " << std::fixed
-                    << std::setprecision(precision) << stopCrit << std::endl;
+          printFixed(std::cout, precision,
+                     "RLR iterations:   ", i + 1,
+                     "\nEstimated rank:   ", D.n_cols,
+                     "\nFinal error:      ", stopCrit);
         }
         return;
       }
     }
 
-    std::cout << "   WARNING: RLR did not converge in " << rlrIters
-              << " iterations" << std::endl;
-    std::cout << "            Estimated rank:  " << D.n_cols << std::endl;
-    std::cout << "               Final error: " << std::fixed
-              << std::setprecision(precision) << stopCrit << std::endl;
+    printFixed(std::cerr, precision,
+               "WARNING: RLR did not converge in ", rlrIters, " iterations",
+               "\nEstimated rank:   ", D.n_cols,
+               "\nFinal error:      ", stopCrit);
 
     return;
   };
@@ -381,12 +373,10 @@ private:
       }
     }
 
-    // Delete the zero bases
+    // Delete the zero bases and update A
     alphaIdxs = arma::find(alphaNorm != 0.);
     D = D.cols(alphaIdxs);
     alpha = alpha.rows(alphaIdxs);
-
-    // Update A
     A = D * alpha;
 
     return;
@@ -400,6 +390,21 @@ private:
   double mu;
 
   arma::mat D, A, E, alpha, Z, Etmp, error;
+
+  template <typename Arg, typename... Args>
+  void print(std::ostream &out, Arg &&arg, Args &&... args)
+  {
+    out << std::forward<Arg>(arg);
+    using expander = int[];
+    (void)expander{0, (void(out << std::forward<Args>(args)), 0)...};
+    out << std::endl;
+  }
+
+  template <typename Arg, typename... Args>
+  void printFixed(std::ostream &out, const uint32_t precision, Arg &&arg, Args &&... args)
+  {
+    print(out, std::fixed, std::setprecision(precision), arg, args...);
+  }
 };
 
 extern "C"
@@ -415,8 +420,7 @@ extern "C"
     ROSL *pyrosl = new ROSL();
 
     // First pass the parameters (the easy bit!)
-    pyrosl->Parameters(R, lambda, tol, iter, method, subsamplel, subsampleh,
-                       verbose);
+    pyrosl->Parameters(R, lambda, tol, iter, method, subsamplel, subsampleh, verbose);
 
     // Copy the image sequence into arma::mat
     // This is the dangerous bit - we want to avoid copying, so set
