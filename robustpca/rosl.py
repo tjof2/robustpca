@@ -18,11 +18,11 @@
 
 import ctypes
 import os
-import numpy as np
 
+import numpy as np
 from numpy.ctypeslib import ndpointer
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_random_state, check_array
+from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 
@@ -114,11 +114,7 @@ class ROSL(BaseEstimator, TransformerMixin):
 
         A = D*alpha
 
-    Further information can be found in the paper:
-
-      X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning:
-      Efficient Recovery of Corrupted Low-rank Matrices"
-      http://dx.doi.org/10.1109/CVPR.2014.495
+    Further information can be found in the paper [Shu2014]_.
 
     Parameters
     ----------
@@ -126,27 +122,19 @@ class ROSL(BaseEstimator, TransformerMixin):
         if method == 'full' (default), use full data matrix
         if method == 'subsample', use a subset of the data with a size defined
             by the 'sampling' keyword argument (ROSL+ algorithm).
-
     sampling : tuple (n_cols, n_rows), required if 'method' == 'subsample'
         The size of the data matrix used in the ROSL+ algorithm.
-
     n_components : int, optional
         Initial estimate of data dimensionality.
-
-    lambda1 : float, optional
+    lambda1 : float
         Regularization parameter on l1-norm (sparse error term).
-
-    tol : float, optional
-        Stopping criterion for iterative algorithm.
-
-    max_iter : int, optional
-        Maximum number of iterations.
-
-    verbose : bool, optional
+        Default is 0.01.
+    tol : float
+        Stopping criterion for iterative algorithm. Default is 1e-6.
+    max_iter : int
+        Maximum number of iterations. Default is 500.
+    verbose : bool, default True
         Show or hide the output from the algorithm.
-
-    use_cpp : bool, optional
-        Use C++ algorithm instead of Python.
 
     Attributes
     ----------
@@ -155,6 +143,13 @@ class ROSL(BaseEstimator, TransformerMixin):
 
     residuals_ : array, [n_samples, n_features]
         The error in the model.
+
+    References
+    ----------
+    .. [Shu2014] X. Shu, F. Porikli and N. Ahuja, "Robust Orthonormal Subspace Learning:
+                 Efficient Recovery of Corrupted Low-Rank Matrices," 2014 IEEE Conference on
+                 Computer Vision and Pattern Recognition, Columbus, OH, 2014, pp. 3874-3881,
+                 DOI: 10.1109/CVPR.2014.495.
 
     """
 
@@ -167,8 +162,7 @@ class ROSL(BaseEstimator, TransformerMixin):
         tol=1e-6,
         max_iter=500,
         verbose=True,
-        use_cpp=False,
-        random_state=None,
+        copy=False,
     ):
         self.n_components = n_components
         self.method = method
@@ -177,8 +171,7 @@ class ROSL(BaseEstimator, TransformerMixin):
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
-        self.use_cpp = use_cpp
-        self.random_state = random_state
+        self.copy = copy
 
     def _fit(self, X):
         """ Build a model of data X
@@ -197,30 +190,29 @@ class ROSL(BaseEstimator, TransformerMixin):
             The subspace basis
 
         """
-        X = check_array(X, dtype=float)
+        X = check_array(X, copy=self.copy, dtype=[np.float64, np.float32])
 
-        if self.use_cpp:
-            D, alpha, E = _cpp_rosl(
-                X,
-                n_components=self.n_components,
-                method=self.method,
-                sampling=self.sampling,
-                lambda1=self.lambda1,
-                tol=self.tol,
-                max_iter=self.max_iter,
-                verbose=self.verbose,
-            )
+        D, alpha, E = _cpp_rosl(
+            X,
+            n_components=self.n_components,
+            method=self.method,
+            sampling=self.sampling,
+            lambda1=self.lambda1,
+            tol=self.tol,
+            max_iter=self.max_iter,
+            verbose=self.verbose,
+        )
 
         self.n_components_ = n_components
         self.loadings_ = D[:, : self.n_components_]
         self.components_ = alpha[: self.n_components]
         self.residuals_ = E
-        self.model_ = D.dot(A)
+        self.model_ = D @ A
 
         return self.loadings_, self.components_
 
     def fit(self, X, y=None):
-        """ Build a model of data X
+        """Build a model of data X.
 
         Parameters
         ----------
@@ -238,28 +230,8 @@ class ROSL(BaseEstimator, TransformerMixin):
 
         return self
 
-    def fit_transform(self, X, y=None):
-        """ Build a model of data X and apply it to data X
-
-        Parameters
-        ----------
-        X : array [n_samples, n_features]
-            The data to be modelled.
-        y : Ignored
-
-        Returns
-        -------
-        loadings : array [n_samples, n_features]
-            The model coefficients.
-
-        """
-        loadings, components = self._fit(X)
-        loadings = loadings[:, : self.n_components_]
-
-        return loadings
-
     def transform(self, Y):
-        """ Apply the learned model to data Y.
+        """Apply the learned model to data Y.
 
         Parameters
         ----------
@@ -276,4 +248,4 @@ class ROSL(BaseEstimator, TransformerMixin):
         check_is_fitted(self, "n_components_")
         Y = check_array(Y)
 
-        return np.dot(Y, self.components_.T)
+        return Y @ self.components_.T
