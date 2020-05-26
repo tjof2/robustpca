@@ -27,8 +27,8 @@ DEFAULT_TOL = 5e-3
 class TestROSL:
     def setup_method(self, method):
         # Parameters to create dataset
-        n = 2000
-        m = 2000
+        n = 1000
+        m = 1000
         rank = 5
         p = 0.1
         seed = 12
@@ -70,9 +70,9 @@ class TestROSL:
 
     def test_full(self):
         rosl = ROSL(n_components=10, lambda1=0.03)
-        _ = rosl.fit_transform(X)
+        _ = rosl.fit_transform(self.X)
         self._verify_norms(self.R, rosl.model_)
-        self._verify_norms(self.E, rosl.errors_)
+        self._verify_norms(self.E, rosl.residuals_)
 
     def test_subsample(self):
         rosl = ROSL(
@@ -82,6 +82,6 @@ class TestROSL:
             lambda1=self.reg_s,
             max_iter=1000,
         )
-        _ = rosl.fit_transform(X)
+        _ = rosl.fit_transform(self.X)
         self._verify_norms(self.R, rosl.model_)
-        self._verify_norms(self.E, rosl.errors_)
+        self._verify_norms(self.E, rosl.residuals_)

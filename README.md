@@ -12,14 +12,7 @@ Python and C++ implementation of Robust Orthonormal Subspace Learning using the 
 
 ## Description
 
-This is a C++ implementation of the Robust Orthonormal Subspace Learning (ROSL) algorithm [1].
-ROSL solves the robust PCA problem, recovering a low-rank matrix **A**
-from the corrupted observation **X** according to:
-
-<img src="http://i.imgur.com/76Wse2e.png" width="360">
-
-where **E** is the sparse error term. ROSL incorporates a memory-efficient method for recovering **A** from a sub-sample
-of the matrix **X**.
+This is a C++ implementation of the Robust Orthonormal Subspace Learning (ROSL) algorithm [1]. ROSL solves the robust PCA problem, recovering a low-rank matrix **X** and a sparse error matrix **E** from the corrupted observations **Y** according to **Y=X+E**. ROSL also incorporates a memory-efficient method for recovering **A** from a sub-sample of the matrix **X**.
 
 > [1] X. Shu, F. Porikli and N. Ahuja, "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-Rank Matrices," 2014 IEEE Conference on Computer Vision and Pattern Recognition, Columbus, OH, 2014, pp. 3874-3881, DOI: [10.1109/CVPR.2014.495](http://dx.doi.org/10.1109/CVPR.2014.495).
 

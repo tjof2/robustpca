@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
+from .rosl import ROSL
 
-_logger = logging.getLogger(__name__)
+__all__ = ["ROSL"]
 
 __author__ = "Tom Furnival"
 __copyright__ = "Copyright 2015-2020, Tom Furnival"
@@ -26,5 +26,5 @@ __credits__ = ["Tom Furnival"]
 __license__ = "GPLv3"
 __version__ = "0.3.0"
 __maintainer__ = "Tom Furnival"
-__email__ = ""
+__email__ = "tjof2@cam.ac.uk"
 __status__ = "Development"

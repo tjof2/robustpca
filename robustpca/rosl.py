@@ -55,7 +55,9 @@ def _cpp_rosl(
     if method == "subsample" and sampling is None:
         raise ValueError("'method' is set to 'subsample' but 'sampling' is not set.")
 
-    libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "librosl.so")
+    libpath = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "../src/librosl.so"
+    )
     pyrosl = ctypes.cdll.LoadLibrary(libpath).pyROSL
     pyrosl.restype = ctypes.c_int
     pyrosl.argtypes = [
@@ -76,14 +78,18 @@ def _cpp_rosl(
     ]
 
     D = np.zeros(X.shape, dtype=np.double, order="F")
-    alpha = np.zeros(X.shape, dtype=np.double, order="F")
+    A = np.zeros(X.shape, dtype=np.double, order="F")
     E = np.zeros(X.shape, dtype=np.double, order="F")
 
-    s1, s2 = sampling
-    _ = pyrosl(
+    if sampling is not None:
+        s1, s2 = sampling
+    else:
+        s1, s2 = n_samples, n_features
+
+    rank_est = pyrosl(
         X,
         D,
-        alpha,
+        A,
         E,
         n_samples,
         n_features,
@@ -97,22 +103,22 @@ def _cpp_rosl(
         verbose,
     )
 
-    return D, alpha, E
+    return D, A, E, rank_est
 
 
 class ROSL(BaseEstimator, TransformerMixin):
 
     """ Robust Orthonormal Subspace Learning Python wrapper.
 
-    Robust Orthonormal Subspace Learning (ROSL) seeks to recover a low-rank matrix A
-    and a sparse error matrix E from a corrupted observation X:
+    Robust Orthonormal Subspace Learning (ROSL) seeks to recover a low-rank matrix X
+    and a sparse error matrix E from a corrupted observation Y:
 
-        min ||A||_* + lambda ||E||_1    subject to X = A + E
+        min ||X||_* + lambda ||E||_1    subject to Y = X + E
 
     where ||.||_* is the nuclear norm, and ||.||_1 is the l1-norm. ROSL further models
-    the low-rank matrix A as spanning an orthonormal subspace D with coefficients alpha
+    the low-rank matrix X as spanning an orthonormal subspace D with coefficients A:
 
-        A = D*alpha
+        X = D*A
 
     Further information can be found in the paper [Shu2014]_.
 
@@ -140,7 +146,6 @@ class ROSL(BaseEstimator, TransformerMixin):
     ----------
     model_ : array, [n_samples, n_features]
         The results of the ROSL decomposition.
-
     residuals_ : array, [n_samples, n_features]
         The error in the model.
 
@@ -192,7 +197,7 @@ class ROSL(BaseEstimator, TransformerMixin):
         """
         X = check_array(X, copy=self.copy, dtype=[np.float64, np.float32])
 
-        D, alpha, E = _cpp_rosl(
+        D, A, E, rank_est = _cpp_rosl(
             X,
             n_components=self.n_components,
             method=self.method,
@@ -203,9 +208,9 @@ class ROSL(BaseEstimator, TransformerMixin):
             verbose=self.verbose,
         )
 
-        self.n_components_ = n_components
+        self.n_components_ = rank_est
         self.loadings_ = D[:, : self.n_components_]
-        self.components_ = alpha[: self.n_components]
+        self.components_ = A[: self.n_components]
         self.residuals_ = E
         self.model_ = D @ A
 
