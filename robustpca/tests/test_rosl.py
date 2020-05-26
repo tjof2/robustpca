@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 Tom Furnival
+# Copyright 2015-2020 Tom Furnival
 #
 # This file is part of RobustPCA.
 #
@@ -36,9 +36,9 @@ class TestROSL:
         # Parameters for ROSL
 
         # Parameters for ROSL+
-        reg_s = 0.05
-        est_s = 10
-        sampling = (250, 250)
+        self.reg_s = 0.05
+        self.est_s = 10
+        self.sampling = (250, 250)
 
         rng = np.random.RandomState(seed)
 
@@ -76,10 +76,10 @@ class TestROSL:
 
     def test_subsample(self):
         rosl = ROSL(
-            n_components=est_s,
+            n_components=self.est_s,
             method="subsample",
-            sampling=sampling,
-            lambda1=reg_s,
+            sampling=self.sampling,
+            lambda1=self.reg_s,
             max_iter=1000,
         )
         _ = rosl.fit_transform(X)

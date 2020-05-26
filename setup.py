@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 Tom Furnival
+# Copyright 2015-2020 Tom Furnival
 #
 # This file is part of RobustPCA.
 #
@@ -17,7 +17,7 @@
 # along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 try:
     with open("robustpca/__init__.py", "r") as f:
@@ -28,7 +28,7 @@ except Exception as e:
 setup(
     name="robustpca",
     version=__version__,
-    description="Robust PCA implementations in Python.",
+    description="Robust PCA implementation in Python/C++",
     author=__author__,
     author_email=__email__,
     license="GPLv3",
@@ -48,7 +48,7 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     packages=find_packages(),
-    install_requires=[],
+    install_requires=["numpy>=1.16", "scikit-learn>=0.20"],
     package_data={
         "": ["LICENSE", "README.md", "requirements.txt"],
         "robustpca": ["*.py"],

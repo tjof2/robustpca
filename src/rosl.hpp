@@ -1,5 +1,5 @@
 /***************************************************************************
-Copyright (C) 2015-2019 Tom Furnival
+Copyright (C) 2015-2020 Tom Furnival
 
 This file is part of RobustPCA.
 
@@ -38,9 +38,11 @@ along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <armadillo>
 
-class DLLEXPORT ROSL {
+class DLLEXPORT ROSL
+{
 public:
-  ROSL() {
+  ROSL()
+  {
     method = 0;
     Sl = 100;
     Sh = 100;
@@ -50,7 +52,8 @@ public:
     maxIter = 100;
     verbose = false;
   };
-  ~ROSL() {
+  ~ROSL()
+  {
     D.reset();
     E.reset();
     A.reset();
@@ -66,7 +69,8 @@ public:
   // Set parameters
   void Parameters(int rankEstimate, double lambdaParameter, double tolerance,
                   int maxiterations, int usermethod, int subsamplingl,
-                  int subsamplingh, bool verb) {
+                  int subsamplingh, bool verb)
+  {
     method = usermethod;
     Sl = subsamplingl;
     Sh = subsamplingh;
@@ -78,21 +82,24 @@ public:
     return;
   };
 
-  void getD(double *dPy, int m, int n) {
+  void getD(double *dPy, int m, int n)
+  {
     D.resize(m, n);
     memcpy(dPy, D.memptr(), D.n_elem * sizeof(double));
     D.reset();
     return;
   };
 
-  void getAlpha(double *alphaPy, int m, int n) {
+  void getAlpha(double *alphaPy, int m, int n)
+  {
     alpha.resize(m, n);
     memcpy(alphaPy, alpha.memptr(), alpha.n_elem * sizeof(double));
     alpha.reset();
     return;
   };
 
-  void getE(double *ePy) {
+  void getE(double *ePy)
+  {
     memcpy(ePy, E.memptr(), E.n_elem * sizeof(double));
     E.reset();
     return;
@@ -125,10 +132,11 @@ private:
 };
 
 // This is the Python/C interface using ctypes (needs to be C-style for simplicity)
-extern "C" {
-int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
-           int R, double lambda, double tol, int iter, int method,
-           int subsamplel, int subsampleh, bool verbose);
+extern "C"
+{
+  int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
+             int R, double lambda, double tol, int iter, int method,
+             int subsamplel, int subsampleh, bool verbose);
 }
 
 #endif

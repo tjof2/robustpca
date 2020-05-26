@@ -1,5 +1,5 @@
 /***************************************************************************
-Copyright (C) 2015-2019 Tom Furnival
+Copyright (C) 2015-2020 Tom Furnival
 
 This file is part of RobustPCA.
 
@@ -19,11 +19,13 @@ along with RobustPCA.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "rosl.hpp"
 
-void ROSL::runROSL(arma::mat *X) {
+void ROSL::runROSL(arma::mat *X)
+{
   int m = (*X).n_rows;
   int n = (*X).n_cols;
 
-  switch (method) {
+  switch (method)
+  {
   case 0:
     // For fully-sampled ROSL
     InexactALM_ROSL(X);
@@ -88,7 +90,8 @@ void ROSL::runROSL(arma::mat *X) {
   return;
 };
 
-void ROSL::InexactALM_ROSL(arma::mat *X) {
+void ROSL::InexactALM_ROSL(arma::mat *X)
+{
   int m = (*X).n_rows;
   int n = (*X).n_cols;
   int precision = (int)std::abs(std::log10(tol)) + 2;
@@ -125,7 +128,8 @@ void ROSL::InexactALM_ROSL(arma::mat *X) {
 
   double stopcrit;
 
-  for (int i = 0; i < maxIter; i++) {
+  for (int i = 0; i < maxIter; i++)
+  {
     // Error matrix and intensity thresholding
     Etmp = *X + Z - A;
     E = arma::abs(Etmp) - lambda / mu;
@@ -144,8 +148,10 @@ void ROSL::InexactALM_ROSL(arma::mat *X) {
     roslIters = i + 1;
 
     // Exit if stop criteria is met
-    if (stopcrit < tol) {
-      if (verbose) {
+    if (stopcrit < tol)
+    {
+      if (verbose)
+      {
         std::cout << "   ROSL iterations: " << i + 1 << std::endl;
         std::cout << "    Estimated rank: " << D.n_cols << std::endl;
         std::cout << "       Final error: " << std::fixed
@@ -164,7 +170,8 @@ void ROSL::InexactALM_ROSL(arma::mat *X) {
   return;
 };
 
-void ROSL::InexactALM_RLR(arma::mat *X) {
+void ROSL::InexactALM_RLR(arma::mat *X)
+{
   int m = (*X).n_rows;
   int n = (*X).n_cols;
   int precision = (int)std::abs(std::log10(tol)) + 2;
@@ -193,7 +200,8 @@ void ROSL::InexactALM_RLR(arma::mat *X) {
 
   double stopcrit;
 
-  for (int i = 0; i < maxIter; i++) {
+  for (int i = 0; i < maxIter; i++)
+  {
     // Error matrix and intensity thresholding
     Etmp = *X + Z - A;
     E = arma::abs(Etmp) - 1 / mu;
@@ -223,8 +231,10 @@ void ROSL::InexactALM_RLR(arma::mat *X) {
     rlrIters = i + 1;
 
     // Exit if stop criteria is met
-    if (stopcrit < tol) {
-      if (verbose) {
+    if (stopcrit < tol)
+    {
+      if (verbose)
+      {
         std::cout << "    RLR iterations: " << i + 1 << std::endl;
         std::cout << "    Estimated rank: " << D.n_cols << std::endl;
         std::cout << "       Final error: " << std::fixed
@@ -243,7 +253,8 @@ void ROSL::InexactALM_RLR(arma::mat *X) {
   return;
 };
 
-void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
+void ROSL::LowRankDictionaryShrinkage(arma::mat *X)
+{
   // Get current rank estimate
   rank = D.n_cols;
 
@@ -257,7 +268,8 @@ void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
   double dnorm;
 
   // Loop over columns of D
-  for (int i = 0; i < rank; i++) {
+  for (int i = 0; i < rank; i++)
+  {
     // Compute error and new D(:,i)
     D.col(i).zeros();
     error = ((*X + Z - E) - (D * alpha));
@@ -265,9 +277,11 @@ void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
     dnorm = arma::norm(D.col(i));
 
     // Shrinkage
-    if (dnorm > 0.) {
+    if (dnorm > 0.)
+    {
       // Gram-Schmidt on D
-      for (int j = 0; j < i; j++) {
+      for (int j = 0; j < i; j++)
+      {
         D.col(i) = D.col(i) - D.col(j) * (arma::trans(D.col(j)) * D.col(i));
       }
 
@@ -283,7 +297,9 @@ void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
           (alphanorm(i) - 1 / mu > 0.) ? alphanorm(i) - 1 / mu : 0.;
       alpha.row(i) *= alphanormthresh / alphanorm(i);
       alphanorm(i) = alphanormthresh;
-    } else {
+    }
+    else
+    {
       alpha.row(i).zeros();
       alphanorm(i) = 0.;
     }
@@ -303,7 +319,8 @@ void ROSL::LowRankDictionaryShrinkage(arma::mat *X) {
 // This is the Python/C interface using ctypes (needs to be C-style for simplicity)
 int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
            int R, double lambda, double tol, int iter, int method,
-           int subsamplel, int subsampleh, bool verbose) {
+           int subsamplel, int subsampleh, bool verbose)
+{
 
   // Create class instance
   ROSL *pyrosl = new ROSL();
@@ -334,7 +351,8 @@ int pyROSL(double *xPy, double *dPy, double *alphaPy, double *ePy, int m, int n,
   auto elapsed =
       std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
 
-  if (verbose) {
+  if (verbose)
+  {
     std::cout << "Total time: " << std::setprecision(5)
               << elapsed / 1E6 << " seconds" << std::endl;
   }

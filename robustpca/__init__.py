@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 Tom Furnival
+# Copyright 2015-2020 Tom Furnival
 #
 # This file is part of RobustPCA.
 #
@@ -21,10 +21,10 @@ import logging
 _logger = logging.getLogger(__name__)
 
 __author__ = "Tom Furnival"
-__copyright__ = "Copyright 2015-2019, Tom Furnival"
+__copyright__ = "Copyright 2015-2020, Tom Furnival"
 __credits__ = ["Tom Furnival"]
 __license__ = "GPLv3"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __maintainer__ = "Tom Furnival"
 __email__ = ""
 __status__ = "Development"

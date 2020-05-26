@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 Tom Furnival
+# Copyright 2015-2020 Tom Furnival
 #
 # This file is part of RobustPCA.
 #
@@ -55,7 +55,7 @@ def _cpp_rosl(
     if method == "subsample" and sampling is None:
         raise ValueError("'method' is set to 'subsample' but 'sampling' is not set.")
 
-    libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "librosl.so.0.2")
+    libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "librosl.so")
     pyrosl = ctypes.cdll.LoadLibrary(libpath).pyROSL
     pyrosl.restype = ctypes.c_int
     pyrosl.argtypes = [
