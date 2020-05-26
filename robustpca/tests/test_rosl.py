@@ -25,12 +25,12 @@ from robustpca import ROSL
 class TestROSL:
     def setup_method(self, method):
         # Parameters to create dataset
-        n = 1000
-        m = 1000
-        rank = 5
-        p = 0.1
-        seed = 12
-        self.sampling = (250, 250)
+        n = 1024
+        m = 1024
+        rank = 4
+        p = 0.05
+        seed = 123
+        self.sampling = (256, 256)
 
         rng = np.random.RandomState(seed)
 
