@@ -339,20 +339,15 @@ private:
 
   void LowRankDictionaryShrinkage(const arma::mat &X)
   {
-    // Get current rank estimate
     rank = D.n_cols;
 
-    // Thresholding
-    double alphaNormThresh;
-    arma::vec alphaNorm(rank);
-    alphaNorm.zeros();
+    double dNorm, alphaNormThresh, ooMu;
+    ooMu = 1.0 / mu;
+
+    arma::vec alphaNorm = arma::zeros<arma::vec>(rank);
     arma::uvec alphaIdxs;
 
-    // Norms
-    double dNorm;
-
-    // Loop over columns of D
-    for (size_t i = 0; i < rank; i++)
+    for (size_t i = 0; i < rank; i++) // Loop over columns of D
     {
       // Compute error and new D(:,i)
       D.col(i).zeros();
@@ -360,10 +355,8 @@ private:
       D.col(i) = error * arma::trans(alpha.row(i));
       dNorm = arma::norm(D.col(i));
 
-      // Shrinkage
-      if (dNorm > 0.)
+      if (dNorm > 0.) // Shrinkage with Gram-Schmidt on D
       {
-        // Gram-Schmidt on D
         for (size_t j = 0; j < i; j++)
         {
           D.col(i) = D.col(i) - D.col(j) * (arma::trans(D.col(j)) * D.col(i));
@@ -377,7 +370,7 @@ private:
 
         // Magnitude thresholding
         alphaNorm(i) = arma::norm(alpha.row(i));
-        alphaNormThresh = (alphaNorm(i) - 1 / mu > 0.) ? alphaNorm(i) - 1 / mu : 0.;
+        alphaNormThresh = (alphaNorm(i) - ooMu > 0.) ? alphaNorm(i) - ooMu : 0.;
         alpha.row(i) *= alphaNormThresh / alphaNorm(i);
         alphaNorm(i) = alphaNormThresh;
       }
@@ -439,8 +432,7 @@ extern "C"
     pyrosl->runROSL(X);
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    auto elapsed =
-        std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
 
     if (verbose)
     {

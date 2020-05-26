@@ -1,6 +1,6 @@
 # Travis file
 
-language: generic
+language: python
 
 before_install:
   - if [${TRAVIS_OS_NAME} == "linux"]; then sudo apt-get update -qq; fi
@@ -8,7 +8,7 @@ before_install:
 
 matrix:
   include:
-    - os: linux
+    - name: "Linux, 3.7, pip"
       env: COMPILER_NAME=gcc CXX=g++-7 CC=gcc-7
       python: 3.7
       addons:
@@ -20,6 +20,7 @@ script:
   - cd src
   - make CXX=$CXX
   - cd ../
+  - which python
   - pip install --upgrade -e .
   - pytest --pyargs robustpca --cov=robustpca robustpca/"
 
