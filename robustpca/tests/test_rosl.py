@@ -74,7 +74,7 @@ class TestROSL:
             lambda1=lambda1,
             method="subsample",
             sampling=self.sampling,
-            max_iter=1000,
+            max_iter=500,
             random_state=self.seed,
         )
         _ = rosl.fit_transform(self.X)
