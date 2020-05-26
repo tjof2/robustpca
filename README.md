@@ -21,7 +21,7 @@ from the corrupted observation **X** according to:
 where **E** is the sparse error term. ROSL incorporates a memory-efficient method for recovering **A** from a sub-sample
 of the matrix **X**.
 
-> [1] X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". ([paper](http://dx.doi.org/10.1109/CVPR.2014.495))
+> [1] X. Shu, F. Porikli and N. Ahuja, "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-Rank Matrices," 2014 IEEE Conference on Computer Vision and Pattern Recognition, Columbus, OH, 2014, pp. 3874-3881, DOI: [10.1109/CVPR.2014.495](http://dx.doi.org/10.1109/CVPR.2014.495).
 
 ## Installation
 
@@ -31,6 +31,14 @@ This library makes use of the **[Armadillo](http://arma.sourceforge.net)** C++ l
 which needs to be installed first. It is recommended that you use a high-speed replacement for
 LAPACK and BLAS such as OpenBLAS, MKL or ACML; more information can be found in the [Armadillo
 FAQs](http://arma.sourceforge.net/faq.html#dependencies).
+
+One way to install the latest version of Armadillo is to run:
+
+```bash
+$ tar -xzf robustpca.tar.gz
+$ cd robustpca/src
+$ ./install-dependencies.sh
+```
 
 **Building from source**
 
