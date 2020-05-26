@@ -37,7 +37,6 @@ def _cpp_rosl(
     random_state=None,
 ):
     if not np.isfortran(X):
-        print("Array must be in Fortran-order. Converting now.")
         X = np.asfortranarray(X)
 
     n_samples, n_features = X.shape
