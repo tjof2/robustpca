@@ -171,9 +171,11 @@ public:
     alpha.set_size(maxRank, n);
     error.set_size(m, n);
 
-    alpha.randu(); // Initialize alpha randomly
-    A = X;         // First guess of A is the input data
-    D.zeros();     // Set all other matrices to zero
+    alpha.randn();                     // Initialize alpha randomly
+    alpha /= arma::norm(alpha, "fro"); // Normalize alpha
+
+    A = X;     // First guess of A is the input data
+    D.zeros(); // Set all other matrices to zero
     E.zeros();
     Z.zeros();
     tempE.zeros();
