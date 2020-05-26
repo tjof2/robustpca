@@ -21,7 +21,7 @@ script:
   - make CXX=$CXX
   - cd ../
   - pip install --upgrade -e .
-  - pytest--pyargs robustpca --cov=robustpca robustpca/"
+  - pytest --pyargs robustpca --cov=robustpca robustpca/"
 
 notifications:
   email: false
