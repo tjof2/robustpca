@@ -34,7 +34,6 @@ def _cpp_rosl(
     lambda1=1,
     tol=1e-6,
     max_iter=1e3,
-    verbose=True,
 ):
     if not np.isfortran(X):
         print("Array must be in Fortran-order. Converting now.")
@@ -59,22 +58,21 @@ def _cpp_rosl(
         os.path.dirname(os.path.abspath(__file__)), "../src/librosl.so"
     )
     pyrosl = ctypes.cdll.LoadLibrary(libpath).pyROSL
-    pyrosl.restype = ctypes.c_int
+    pyrosl.restype = ctypes.c_uint32
     pyrosl.argtypes = [
         ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
         ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
         ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
         ndpointer(ctypes.c_double, flags="F_CONTIGUOUS"),
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
         ctypes.c_double,
         ctypes.c_double,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_int,
-        ctypes.c_bool,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
     ]
 
     D = np.zeros(X.shape, dtype=np.double, order="F")
@@ -91,19 +89,18 @@ def _cpp_rosl(
         D,
         A,
         E,
+        lambda1,
+        tol,
         n_samples,
         n_features,
         n_components,
-        lambda1,
-        tol,
         int(max_iter),
         _available_methods[method],
         s1,
         s2,
-        verbose,
     )
 
-    return D, A, E, rank_est
+    return D, A, E, int(rank_est)
 
 
 class ROSL(BaseEstimator, TransformerMixin):
@@ -139,8 +136,6 @@ class ROSL(BaseEstimator, TransformerMixin):
         Stopping criterion for iterative algorithm. Default is 1e-6.
     max_iter : int
         Maximum number of iterations. Default is 500.
-    verbose : bool, default True
-        Show or hide the output from the algorithm.
 
     Attributes
     ----------
@@ -166,7 +161,6 @@ class ROSL(BaseEstimator, TransformerMixin):
         lambda1=0.01,
         tol=1e-6,
         max_iter=500,
-        verbose=True,
         copy=False,
     ):
         self.n_components = n_components
@@ -175,7 +169,6 @@ class ROSL(BaseEstimator, TransformerMixin):
         self.lambda1 = lambda1
         self.tol = tol
         self.max_iter = max_iter
-        self.verbose = verbose
         self.copy = copy
 
     def _fit(self, X):
@@ -205,7 +198,6 @@ class ROSL(BaseEstimator, TransformerMixin):
             lambda1=self.lambda1,
             tol=self.tol,
             max_iter=self.max_iter,
-            verbose=self.verbose,
         )
 
         self.n_components_ = rank_est
