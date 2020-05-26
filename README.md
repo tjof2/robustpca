@@ -1,14 +1,17 @@
-# Robust PCA
-Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
 
 [![Build Status](https://travis-ci.org/tjof2/robustpca.svg?branch=master)](https://travis-ci.org/tjof2/robustpca)
 [![DOI](https://zenodo.org/badge/46107795.svg)](https://zenodo.org/badge/latestdoi/46107795)
 
+# Robust PCA
+Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
+
 ## Contents
 
-+ [Description](#description)
-+ [Installation](#installation)
-+ [Usage](#usage)
+- [Robust PCA](#robust-pca)
+  - [Contents](#contents)
+  - [Description](#description)
+  - [Installation](#installation)
+  - [Usage](#usage)
 
 ## Description
 
@@ -21,7 +24,7 @@ from the corrupted observation **X** according to:
 where **E** is the sparse error term. ROSL incorporates a memory-efficient method for recovering **A** from a sub-sample
 of the matrix **X**.
 
-[1] X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". ([paper](http://dx.doi.org/10.1109/CVPR.2014.495))
+> [1] X Shu, F Porikli, N Ahuja. (2014) "Robust Orthonormal Subspace Learning: Efficient Recovery of Corrupted Low-rank Matrices". ([paper](http://dx.doi.org/10.1109/CVPR.2014.495))
 
 ## Installation
 
