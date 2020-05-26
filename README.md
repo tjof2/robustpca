@@ -5,10 +5,7 @@
 # Robust PCA
 Python and C++ implementation of Robust Orthonormal Subspace Learning using the Armadillo linear algebra library.
 
-## Contents
-
 - [Robust PCA](#robust-pca)
-  - [Contents](#contents)
   - [Description](#description)
   - [Installation](#installation)
   - [Usage](#usage)
