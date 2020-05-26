@@ -30,12 +30,6 @@ class TestROSL:
         rank = 5
         p = 0.1
         seed = 12
-
-        # Parameters for ROSL
-
-        # Parameters for ROSL+
-        self.reg_s = 0.05
-        self.est_s = 10
         self.sampling = (250, 250)
 
         rng = np.random.RandomState(seed)
@@ -43,7 +37,7 @@ class TestROSL:
         # Basis
         U = rng.randn(n, rank)
         V = rng.randn(m, rank)
-        R = np.dot(U, np.transpose(V))
+        R = U @ V.T
 
         # Sparse errors
         E = -1000 + 1000 * rng.rand(n, m)
@@ -57,25 +51,29 @@ class TestROSL:
         self.seed = seed
         self.card = m * n
 
-    def _verify_norms(self, A, B, tol=1e-3):
+    def _verify_norms(self, A, B, tol=5e-3):
         tol *= self.card
         assert A.shape == B.shape
 
         for norm in ["fro", 1]:
             assert np.linalg.norm(A - B, norm) < tol
 
-    def test_full(self):
-        rosl = ROSL(n_components=10, lambda1=0.03, random_state=self.seed)
+    @pytest.mark.parametrize("n_components", [5, 10])
+    @pytest.mark.parametrize("lambda1", [None, 0.01, 0.1])
+    def test_full(self, n_components, lambda1):
+        rosl = ROSL(n_components=n_components, lambda1=lambda1, random_state=self.seed)
         _ = rosl.fit_transform(self.X)
         self._verify_norms(self.R, rosl.model_)
         self._verify_norms(self.E, rosl.residuals_)
 
-    def test_subsample(self):
+    @pytest.mark.parametrize("n_components", [5, 10])
+    @pytest.mark.parametrize("lambda1", [None, 0.01, 0.1])
+    def test_subsample(self, n_components, lambda1):
         rosl = ROSL(
-            n_components=self.est_s,
+            n_components=n_components,
+            lambda1=lambda1,
             method="subsample",
             sampling=self.sampling,
-            lambda1=self.reg_s,
             max_iter=1000,
             random_state=self.seed,
         )

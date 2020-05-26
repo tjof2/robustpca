@@ -58,7 +58,7 @@ public:
                                sampleH(sampleH),
                                randomSeed(randomSeed)
   {
-    precision = (uint32_t)std::abs(std::log10(tol)) + 3; // Will print 3 decimal places
+    precision = static_cast<uint32_t>(std::abs(std::log10(tol)) + 3); // Will print 3 decimal places
   };
 
   ~ROSL()
@@ -138,7 +138,7 @@ public:
     return;
   };
 
-  void getAlpha(double *aPy, uint32_t m, uint32_t n)
+  void getA(double *aPy, uint32_t m, uint32_t n)
   {
     alpha.resize(m, n);
     memcpy(aPy, alpha.memptr(), alpha.n_elem * sizeof(double));
@@ -163,8 +163,7 @@ public:
     uint32_t m = X.n_rows;
     uint32_t n = X.n_cols;
 
-    // Initialize A, Z, E, tempE and error
-    A.set_size(m, n);
+    A.set_size(m, n); // Initialize
     Z.set_size(m, n);
     E.set_size(m, n);
     D.set_size(m, maxRank);
@@ -172,12 +171,9 @@ public:
     alpha.set_size(maxRank, n);
     error.set_size(m, n);
 
-    // Initialize alpha randomly
-    alpha.randu();
-
-    // Set all other matrices
-    A = X;
-    D.zeros();
+    alpha.randu(); // Initialize alpha randomly
+    A = X;         // First guess of A is the input data
+    D.zeros();     // Set all other matrices to zero
     E.zeros();
     Z.zeros();
     tempE.zeros();
@@ -233,15 +229,13 @@ public:
     uint32_t m = X.n_rows;
     uint32_t n = X.n_cols;
 
-    // Initialize A, Z, E, tempE
-    A.set_size(m, n);
+    A.set_size(m, n); // Initialize
     Z.set_size(m, n);
     E.set_size(m, n);
     tempE.set_size(m, n);
 
-    // Set all other matrices
-    A = X;
-    E.zeros();
+    A = X;     // First guess of A is the input data
+    E.zeros(); // Set all other matrices to zero
     Z.zeros();
     tempE.zeros();
 
@@ -259,31 +253,34 @@ public:
 
     double stopCrit;
 
-    // SVD variables
-    arma::mat Usvd, Vsvd;
-    arma::vec Ssvd;
-    arma::uvec Sshort;
-    uint32_t SV;
+    arma::mat U_, V_; // SVD variables
+    arma::vec S_;
+    arma::uvec S_nz;
+    int sV;
 
     for (size_t i = 0; i < maxIter; i++)
     {
-      // Error matrix and intensity thresholding
+      // Error matrix thresholding
       tempE = X + Z - A;
-      E = arma::abs(tempE) - 1 / mu;
-      E.transform([](double val) { return (val > 0.) ? val : 0.; });
-      E = E % arma::sign(tempE);
+      E = arma::abs(tempE) - 1.0 / mu;
+      E.transform([](double val) { return std::max(val, 0.0); });
+      E %= arma::sign(tempE);
 
-      // Given D and A...
-      arma::svd_econ(Usvd, Ssvd, Vsvd, D.rows(0, sampleH - 1));
-      Sshort = arma::find(Ssvd > 0.);
-      SV = Sshort.n_elem;
-      alpha = Vsvd.cols(0, SV - 1) * arma::diagmat(1. / Ssvd.subvec(0, SV - 1)) *
-              arma::trans(Usvd.cols(0, SV - 1)) * (X + Z - E);
-      A = (D.rows(0, sampleH - 1)) * alpha;
+      // Given D and A, apply SVD to update alpha
+      arma::svd_econ(U_, S_, V_, D.rows(0, sampleH - 1));
+      S_nz = arma::find(S_ > 0.);
+      sV = std::max(static_cast<int>(S_nz.n_elem), 1) - 1;
 
-      // Update Z
-      Z = (Z + X - A - E) * ooRho;
-      mu = (mu * rho < muBar) ? mu * rho : muBar;
+      // std::cout << D.rows(0, sampleH - 1).n_elem << std::endl
+      //           << S_.n_elem << std::endl
+      //           << S_nz.n_elem << std::endl
+      //           << sV << std::endl;
+
+      alpha = V_.cols(0, sV) * arma::diagmat(1.0 / S_.subvec(0, sV)) * arma::trans(U_.cols(0, sV)) * (X + Z - E);
+
+      A = (D.rows(0, sampleH - 1)) * alpha; // Update A
+      Z = (Z + X - A - E) * ooRho;          // Update Z
+      mu = std::min(mu * rho, muBar);       // Update mu
 
       stopCrit = arma::norm(X - A - E, "fro") * ooFroNorm;
       if (stopCrit < tol)
@@ -348,8 +345,19 @@ public:
 
     // Delete the zero bases and update A
     alphaIdxs = arma::find(alphaNorm != 0.);
-    D = D.cols(alphaIdxs);
-    alpha = alpha.rows(alphaIdxs);
+    if (alphaIdxs.n_elem < 1)
+    {
+      D = D.cols(0, 0);
+      alpha = alpha.rows(0, 0);
+      print(std::cerr, "WARNING: all bases are zero. ",
+            "Consider increasing sampling rate or ",
+            "regularization parameter.");
+    }
+    else
+    {
+      D = D.cols(alphaIdxs);
+      alpha = alpha.rows(alphaIdxs);
+    }
     A = D * alpha;
 
     return;
@@ -405,7 +413,7 @@ extern "C"
     // Fetch data to return to Python
     uint32_t rankEstimate = est->getRank();
     est->getD(dPy, m, n);
-    est->getAlpha(aPy, m, n);
+    est->getA(aPy, m, n);
     est->getE(ePy);
 
     delete est; // Free memory

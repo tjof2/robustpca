@@ -22,6 +22,7 @@ script:
   - cd ../
   - which python
   - pip install --upgrade -e .
+  - pip install coverage pytest pytest-cov
   - pytest --pyargs robustpca --cov=robustpca robustpca/
 
 notifications:

@@ -31,7 +31,7 @@ def _cpp_rosl(
     n_components=None,
     method="full",
     sampling=None,
-    lambda1=1,
+    lambda1=None,
     tol=1e-6,
     max_iter=1e3,
     random_state=None,
@@ -41,6 +41,9 @@ def _cpp_rosl(
         X = np.asfortranarray(X)
 
     n_samples, n_features = X.shape
+
+    if lambda1 is None:
+        lambda1 = 1.0 / np.sqrt(n_features)
 
     if n_components is None:
         n_components = n_features
