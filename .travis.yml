@@ -24,6 +24,8 @@ script:
   - python setup.py build_ext --inplace
   - pip install --upgrade -e .
   - pytest --pyargs robustpca --cov=robustpca robustpca/
+
+after_success:
   - coveralls
 
 notifications:

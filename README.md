@@ -30,24 +30,32 @@ One way to install the latest version of Armadillo is to run:
 
 ```bash
 $ tar -xzf robustpca.tar.gz
-$ cd robustpca/src
+$ cd robustpca
 $ ./install-dependencies.sh
 ```
 
 **Building from source**
 
-To build the library, unpack the source and `cd` into the unpacked directory, then type `make`:
+To build and install the library, run:
 
 ```bash
 $ tar -xzf robustpca.tar.gz
-$ cd robustpca/src
-$ make
+$ cd robustpca
+$ python setup.py build_ext --inplace
+$ pip install -U .
 ```
 
-This will generate a C++ library called `librosl.so`, which is called by the Python module `robustpca`.
-
 ## Usage
-_To be completed_
+
+```python
+import numpy as np
+
+from robustpca import ROSL
+
+X = np.random.randn(100, 100)
+rosl = ROSL(n_components=3)
+Y = rosl.fit_transform(X)
+```
 
 Copyright (C) 2015-2020 Tom Furnival. robustpca is released free of charge under the GNU General Public License (GPLv3).
 
