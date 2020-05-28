@@ -39,15 +39,15 @@ cdef extern from "rosl.hpp":
                                             uint32_t, uint32_t, int)
 
 
-def rosl_lrs(np.ndarray[np.float64_t, ndim=2] X,
-             double lambda1 = 1.0,
-             double tol = 1e-7,
-             bool subsample = False,
-             double sampleL = 1.0,
-             double sampleH = 1.0,
-             uint32_t maxRank = 10,
-             uint32_t maxIter = 1000,
-             int randomSeed = -1):
+def rosl_lrs_double(np.ndarray[np.float64_t, ndim=2] X,
+                    double lambda1 = 1.0,
+                    double tol = 1e-7,
+                    bool subsample = False,
+                    double sampleL = 1.0,
+                    double sampleH = 1.0,
+                    uint32_t maxRank = 10,
+                    uint32_t maxIter = 1000,
+                    int randomSeed = -1):
 
     cdef np.ndarray[double, ndim=2] A
     cdef np.ndarray[double, ndim=2] E
@@ -69,15 +69,16 @@ def rosl_lrs(np.ndarray[np.float64_t, ndim=2] X,
 
     return A, E, rankEstimate
 
-def rosl_all(np.ndarray[np.float64_t, ndim=2] X,
-             double lambda1 = 1.0,
-             double tol = 1e-7,
-             bool subsample = False,
-             double sampleL = 1.0,
-             double sampleH = 1.0,
-             uint32_t maxRank = 10,
-             uint32_t maxIter = 1000,
-             int randomSeed = -1):
+
+def rosl_all_double(np.ndarray[np.float64_t, ndim=2] X,
+                    double lambda1 = 1.0,
+                    double tol = 1e-7,
+                    bool subsample = False,
+                    double sampleL = 1.0,
+                    double sampleH = 1.0,
+                    uint32_t maxRank = 10,
+                    uint32_t maxIter = 1000,
+                    int randomSeed = -1):
 
     cdef np.ndarray[double, ndim=2] A
     cdef np.ndarray[double, ndim=2] E
@@ -104,5 +105,75 @@ def rosl_all(np.ndarray[np.float64_t, ndim=2] X,
     E = numpy_from_mat_d(_E)
     D = numpy_from_mat_d(_D)
     B = numpy_from_mat_d(_B)
+
+    return A, E, D, B, rankEstimate
+
+
+def rosl_lrs_float(np.ndarray[np.float32_t, ndim=2] X,
+                   double lambda1 = 1.0,
+                   double tol = 1e-7,
+                   bool subsample = False,
+                   double sampleL = 1.0,
+                   double sampleH = 1.0,
+                   uint32_t maxRank = 10,
+                   uint32_t maxIter = 1000,
+                   int randomSeed = -1):
+
+    cdef np.ndarray[float, ndim=2] A
+    cdef np.ndarray[float, ndim=2] E
+
+    cdef Mat[float] _A
+    cdef Mat[float] _E
+
+    cdef uint32_t rankEstimate
+
+    _A = Mat[float]()
+    _E = Mat[float]()
+
+    rankEstimate = c_rosl_lrs[float](numpy_to_mat_f(X), _A, _E,
+                                      lambda1, tol, subsample, sampleL, sampleH,
+                                      maxRank, maxIter, randomSeed)
+
+    A = numpy_from_mat_f(_A)
+    E = numpy_from_mat_f(_E)
+
+    return A, E, rankEstimate
+
+
+def rosl_all_float(np.ndarray[np.float32_t, ndim=2] X,
+                   double lambda1 = 1.0,
+                   double tol = 1e-7,
+                   bool subsample = False,
+                   double sampleL = 1.0,
+                   double sampleH = 1.0,
+                   uint32_t maxRank = 10,
+                   uint32_t maxIter = 1000,
+                   int randomSeed = -1):
+
+    cdef np.ndarray[float, ndim=2] A
+    cdef np.ndarray[float, ndim=2] E
+    cdef np.ndarray[float, ndim=2] D
+    cdef np.ndarray[float, ndim=2] B
+
+    cdef Mat[float] _A
+    cdef Mat[float] _E
+    cdef Mat[float] _D
+    cdef Mat[float] _B
+
+    cdef uint32_t rankEstimate
+
+    _A = Mat[float]()
+    _E = Mat[float]()
+    _D = Mat[float]()
+    _B = Mat[float]()
+
+    rankEstimate = c_rosl_all[float](numpy_to_mat_f(X), _A, _E, _D, _B,
+                                      lambda1, tol, subsample, sampleL, sampleH,
+                                      maxRank, maxIter, randomSeed)
+
+    A = numpy_from_mat_f(_A)
+    E = numpy_from_mat_f(_E)
+    D = numpy_from_mat_f(_D)
+    B = numpy_from_mat_f(_B)
 
     return A, E, D, B, rankEstimate
