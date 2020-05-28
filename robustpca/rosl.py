@@ -21,7 +21,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from ._rosl import rosl_all
+from ._rosl import rosl_all_double, rosl_all_float
 
 
 class ROSL(BaseEstimator, TransformerMixin):
@@ -110,10 +110,7 @@ class ROSL(BaseEstimator, TransformerMixin):
             The subspace basis
 
         """
-        X = check_array(X, copy=self.copy, dtype=[np.float64, np.float32])
-        if not np.isfortran(X):
-            X = np.asfortranarray(X)
-
+        X = check_array(X, copy=self.copy, order="F", dtype=[np.float64, np.float32])
         self.n_samples, self.n_features = X.shape
 
         if self.lambda1 is None:
@@ -154,7 +151,12 @@ class ROSL(BaseEstimator, TransformerMixin):
         else:
             self.random_seed_ = self.random_seed
 
-        A, E, D, B, rank_est = rosl_all(
+        if X.dtype == np.float64:
+            f = rosl_all_double
+        elif X.dtype == np.float32:
+            f = rosl_all_float
+
+        A, E, D, B, rank_est = f(
             X,
             self.lambda1_,
             self.tol,

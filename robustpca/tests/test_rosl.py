@@ -68,11 +68,12 @@ class TestROSL:
         # check that the mean is ~= 0
         assert np.abs((self.X - rosl.low_rank_ - rosl.error_).mean()) < tol
 
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("n_components", [5, 10])
     @pytest.mark.parametrize("lambda1", [None, 0.01, 0.1])
     @pytest.mark.parametrize("max_iter", [250, 500])
     @pytest.mark.parametrize("tol", [1e-6, 1e-7])
-    def test_full(self, n_components, lambda1, max_iter, tol, capfd):
+    def test_full(self, dtype, n_components, lambda1, max_iter, tol, capfd):
         rosl = ROSL(
             n_components=n_components,
             lambda1=lambda1,
@@ -80,7 +81,10 @@ class TestROSL:
             tol=tol,
             random_seed=self.seed,
         )
-        _ = rosl.fit_transform(self.X)
+        _ = rosl.fit_transform(self.X.astype(dtype))
+
+        assert rosl.low_rank_.dtype == dtype
+        assert rosl.error_.dtype == dtype
 
         if np.any(np.isnan(rosl.low_rank_)):
             captured = capfd.readouterr()
@@ -90,12 +94,15 @@ class TestROSL:
         else:
             self._check_properties(rosl)
 
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("n_components", [5, 10])
     @pytest.mark.parametrize("lambda1", [None, 0.01, 0.1])
     @pytest.mark.parametrize("subsampling", [0.25, (0.25, 0.33)])
     @pytest.mark.parametrize("max_iter", [250, 500])
     @pytest.mark.parametrize("tol", [1e-6, 1e-7])
-    def test_subsample(self, n_components, lambda1, subsampling, max_iter, tol, capfd):
+    def test_subsample(
+        self, dtype, n_components, lambda1, subsampling, max_iter, tol, capfd
+    ):
         rosl = ROSL(
             n_components=n_components,
             lambda1=lambda1,
@@ -104,7 +111,10 @@ class TestROSL:
             tol=tol,
             random_seed=self.seed,
         )
-        _ = rosl.fit_transform(self.X)
+        _ = rosl.fit_transform(self.X.astype(dtype))
+
+        assert rosl.low_rank_.dtype == dtype
+        assert rosl.error_.dtype == dtype
 
         if np.any(np.isnan(rosl.low_rank_)):
             captured = capfd.readouterr()

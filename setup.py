@@ -52,7 +52,6 @@ setup(
     long_description=open("README.md").read(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Development Status :: 4 - Beta",
@@ -64,7 +63,7 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     packages=find_packages(),
-    install_requires=["numpy>=1.16", "scikit-learn>=0.20"],
+    install_requires=["numpy", "scikit-learn"],
     setup_requires=["wheel", "auditwheel", "cython"],
     package_data={"": ["LICENSE", "README.md"], "robustpca": ["*.py"]},
     ext_modules=cythonize(extensions),
