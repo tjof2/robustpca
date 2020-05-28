@@ -52,7 +52,7 @@ cdef inline Mat[double] numpy_to_mat_d(np.ndarray[double, ndim=2] X):
     return Mat[double](<double*> X.data, X.shape[0], X.shape[1], False, False)
 
 
-cdef inline Mat[float] numpy_to_mat_s(np.ndarray[float, ndim=2] X):
+cdef inline Mat[float] numpy_to_mat_f(np.ndarray[float, ndim=2] X):
     if not X.flags.f_contiguous:
         X = X.copy(order="F")
     return Mat[float](<float*> X.data, X.shape[0], X.shape[1], False, False)
@@ -76,7 +76,7 @@ cdef inline np.ndarray[double, ndim=2] numpy_from_mat_d(Mat[double] &m):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef inline np.ndarray[float, ndim=2] numpy_from_mat_s(Mat[float] &m):
+cdef inline np.ndarray[float, ndim=2] numpy_from_mat_f(Mat[float] &m):
     cdef np.ndarray[float, ndim=2] arr
     cdef float *pArr
     cdef float *pM

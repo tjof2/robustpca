@@ -25,18 +25,18 @@ cimport cython
 from libcpp cimport bool
 from libc.stdint cimport uint32_t
 
-from .arma cimport Mat, numpy_to_mat_d, numpy_from_mat_d, numpy_to_mat_s, numpy_from_mat_s
+from .arma cimport Mat, numpy_to_mat_d, numpy_from_mat_d, numpy_to_mat_f, numpy_from_mat_f
 
 
 cdef extern from "rosl.hpp":
-    cdef uint32_t c_rosl_lrs "rosl_lrs" (Mat[double] &, Mat[double] &, Mat[double] &,
-                                         double, double, bool, double, double,
-                                         uint32_t, uint32_t, int)
+    cdef uint32_t c_rosl_lrs "rosl_lrs"[T] (Mat[T] &, Mat[T] &, Mat[T] &,
+                                            double, double, bool, double, double,
+                                            uint32_t, uint32_t, int)
 
-    cdef uint32_t c_rosl_all "rosl_all" (Mat[double] &, Mat[double] &, Mat[double] &,
-                                         Mat[double] &, Mat[double] &,
-                                         double, double, bool, double, double,
-                                         uint32_t, uint32_t, int)
+    cdef uint32_t c_rosl_all "rosl_all"[T] (Mat[T] &, Mat[T] &, Mat[T] &,
+                                            Mat[T] &, Mat[T] &,
+                                            double, double, bool, double, double,
+                                            uint32_t, uint32_t, int)
 
 
 def rosl_lrs(np.ndarray[np.float64_t, ndim=2] X,
@@ -52,19 +52,17 @@ def rosl_lrs(np.ndarray[np.float64_t, ndim=2] X,
     cdef np.ndarray[double, ndim=2] A
     cdef np.ndarray[double, ndim=2] E
 
-    cdef Mat[double] _X
     cdef Mat[double] _A
     cdef Mat[double] _E
 
     cdef uint32_t rankEstimate
 
-    _X = numpy_to_mat_d(X)
     _A = Mat[double]()
     _E = Mat[double]()
 
-    rankEstimate = c_rosl_lrs(<const Mat[double] &>_X, _A, _E,
-                              lambda1, tol, subsample, sampleL, sampleH,
-                              maxRank, maxIter, randomSeed)
+    rankEstimate = c_rosl_lrs[double](numpy_to_mat_d(X), _A, _E,
+                                      lambda1, tol, subsample, sampleL, sampleH,
+                                      maxRank, maxIter, randomSeed)
 
     A = numpy_from_mat_d(_A)
     E = numpy_from_mat_d(_E)
@@ -86,7 +84,6 @@ def rosl_all(np.ndarray[np.float64_t, ndim=2] X,
     cdef np.ndarray[double, ndim=2] D
     cdef np.ndarray[double, ndim=2] B
 
-    cdef Mat[double] _X
     cdef Mat[double] _A
     cdef Mat[double] _E
     cdef Mat[double] _D
@@ -94,15 +91,14 @@ def rosl_all(np.ndarray[np.float64_t, ndim=2] X,
 
     cdef uint32_t rankEstimate
 
-    _X = numpy_to_mat_d(X)
     _A = Mat[double]()
     _E = Mat[double]()
     _D = Mat[double]()
     _B = Mat[double]()
 
-    rankEstimate = c_rosl_all(<const Mat[double] &>_X, _A, _E, _D, _B,
-                              lambda1, tol, subsample, sampleL, sampleH,
-                              maxRank, maxIter, randomSeed)
+    rankEstimate = c_rosl_all[double](numpy_to_mat_d(X), _A, _E, _D, _B,
+                                      lambda1, tol, subsample, sampleL, sampleH,
+                                      maxRank, maxIter, randomSeed)
 
     A = numpy_from_mat_d(_A)
     E = numpy_from_mat_d(_E)

@@ -31,6 +31,7 @@
 
 namespace rosl
 {
+  template <typename T>
   class ROSL
   {
   public:
@@ -71,7 +72,7 @@ namespace rosl
       C.reset();
     };
 
-    void InexactALM_ROSL(const arma::mat &X, arma::mat &A, arma::mat &E)
+    void InexactALM_ROSL(const arma::Mat<T> &X, arma::Mat<T> &A, arma::Mat<T> &E)
     {
       uint32_t m = X.n_rows;
       uint32_t n = X.n_cols;
@@ -139,7 +140,7 @@ namespace rosl
       return;
     };
 
-    void InexactALM_RLR(const arma::mat &X, arma::mat &A, arma::mat &E)
+    void InexactALM_RLR(const arma::Mat<T> &X, arma::Mat<T> &A, arma::Mat<T> &E)
     {
       uint32_t m = X.n_rows;
       uint32_t n = X.n_cols;
@@ -168,8 +169,8 @@ namespace rosl
 
       double stopCrit;
 
-      arma::mat U_, V_; // SVD variables
-      arma::vec S_;
+      arma::Mat<T> U_, V_; // SVD variables
+      arma::Col<T> S_;
       arma::uvec S_nz;
       int sV;
 
@@ -211,7 +212,7 @@ namespace rosl
       return;
     };
 
-    arma::mat D, B; // Basis and dictionary are public
+    arma::Mat<T> D, B; // Basis and dictionary are public
 
   private:
     double lambda, tol;
@@ -220,16 +221,16 @@ namespace rosl
     uint32_t precision, rank;
     double mu;
 
-    arma::mat Z, E_, C;
+    arma::Mat<T> Z, E_, C;
 
-    void LowRankDictionaryShrinkage(const arma::mat &X, arma::mat &A, arma::mat &E)
+    void LowRankDictionaryShrinkage(const arma::Mat<T> &X, arma::Mat<T> &A, arma::Mat<T> &E)
     {
       rank = D.n_cols;
 
       double dNorm, bNormThresh, ooMu;
       ooMu = 1.0 / mu;
 
-      arma::vec bNorm = arma::zeros<arma::vec>(rank);
+      arma::Col<T> bNorm = arma::zeros<arma::Col<T>>(rank);
       arma::uvec bIdxs;
 
       for (size_t i = 0; i < rank; i++) // Loop over columns of D
@@ -302,9 +303,10 @@ namespace rosl
 
 } // namespace rosl
 
-uint32_t rosl_lrs(const arma::mat &X,
-                  arma::mat &A,
-                  arma::mat &E,
+template <typename T>
+uint32_t rosl_lrs(const arma::Mat<T> &X,
+                  arma::Mat<T> &A,
+                  arma::Mat<T> &E,
                   const double lambda,
                   const double tol,
                   const bool subsample,
@@ -333,10 +335,10 @@ uint32_t rosl_lrs(const arma::mat &X,
     uint32_t sampleH = std::max(minSamples, std::min(n, static_cast<uint32_t>(std::floor(n * sampleLFrac))));
     uint32_t sampleL = std::max(minSamples, std::min(m, static_cast<uint32_t>(std::floor(m * sampleHFrac))));
 
-    rosl::ROSL *est = new rosl::ROSL(lambda, tol, maxRank, maxIter, sampleL, sampleH);
+    rosl::ROSL<T> *est = new rosl::ROSL<T>(lambda, tol, maxRank, maxIter, sampleL, sampleH);
 
     arma::uvec rowAll, colAll, rowSample, colSample;
-    arma::mat Xperm;
+    arma::Mat<T> Xperm;
 
     rowAll = (sampleH == m) ? arma::linspace<arma::uvec>(0, m - 1, m)
                             : arma::shuffle(arma::linspace<arma::uvec>(0, m - 1, m));
@@ -365,7 +367,7 @@ uint32_t rosl_lrs(const arma::mat &X,
   }
   else
   { // For fully-sampled ROSL
-    rosl::ROSL *est = new rosl::ROSL(lambda, tol, maxRank, maxIter);
+    rosl::ROSL<T> *est = new rosl::ROSL<T>(lambda, tol, maxRank, maxIter);
     est->InexactALM_ROSL(X, A, E);
 
     rankEstimate = static_cast<uint32_t>(est->D.n_cols); // Final rank estimate
@@ -375,11 +377,12 @@ uint32_t rosl_lrs(const arma::mat &X,
   return rankEstimate;
 }
 
-uint32_t rosl_all(const arma::mat &X,
-                  arma::mat &A,
-                  arma::mat &E,
-                  arma::mat &D,
-                  arma::mat &B,
+template <typename T>
+uint32_t rosl_all(const arma::Mat<T> &X,
+                  arma::Mat<T> &A,
+                  arma::Mat<T> &E,
+                  arma::Mat<T> &D,
+                  arma::Mat<T> &B,
                   const double lambda,
                   const double tol,
                   const bool subsample,
@@ -408,10 +411,10 @@ uint32_t rosl_all(const arma::mat &X,
     uint32_t sampleH = std::max(minSamples, std::min(n, static_cast<uint32_t>(std::floor(n * sampleLFrac))));
     uint32_t sampleL = std::max(minSamples, std::min(m, static_cast<uint32_t>(std::floor(m * sampleHFrac))));
 
-    rosl::ROSL *est = new rosl::ROSL(lambda, tol, maxRank, maxIter, sampleL, sampleH);
+    rosl::ROSL<T> *est = new rosl::ROSL<T>(lambda, tol, maxRank, maxIter, sampleL, sampleH);
 
     arma::uvec rowAll, colAll, rowSample, colSample;
-    arma::mat Xperm;
+    arma::Mat<T> Xperm;
 
     rowAll = (sampleH == m) ? arma::linspace<arma::uvec>(0, m - 1, m)
                             : arma::shuffle(arma::linspace<arma::uvec>(0, m - 1, m));
@@ -445,7 +448,7 @@ uint32_t rosl_all(const arma::mat &X,
   }
   else
   { // For fully-sampled ROSL
-    rosl::ROSL *est = new rosl::ROSL(lambda, tol, maxRank, maxIter);
+    rosl::ROSL<T> *est = new rosl::ROSL<T>(lambda, tol, maxRank, maxIter);
     est->InexactALM_ROSL(X, A, E);
 
     D.copy_size(est->D); // Copy basis and dictionary
