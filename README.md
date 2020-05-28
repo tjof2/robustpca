@@ -1,5 +1,6 @@
 
 [![Build Status](https://travis-ci.org/tjof2/robustpca.svg?branch=master)](https://travis-ci.org/tjof2/robustpca)
+[![Coverage Status](https://coveralls.io/repos/github/tjof2/robustpca/badge.svg?branch=master)](https://coveralls.io/github/tjof2/robustpca?branch=master)
 [![DOI](https://zenodo.org/badge/46107795.svg)](https://zenodo.org/badge/latestdoi/46107795)
 
 # Robust PCA

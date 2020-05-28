@@ -2,7 +2,7 @@ language: python
 
 env:
   global:
-    - PIP_REQS="numpy scikit-learn cython coverage pytest pytest-cov"
+    - PIP_REQS="numpy scikit-learn cython coverage pytest pytest-cov coveralls"
 
 before_install:
   - if [${TRAVIS_OS_NAME} == "linux"]; then sudo apt-get update -qq; fi
@@ -24,6 +24,7 @@ script:
   - python setup.py build_ext --inplace
   - pip install --upgrade -e .
   - pytest --pyargs robustpca --cov=robustpca robustpca/
+  - coveralls
 
 notifications:
   email: false
