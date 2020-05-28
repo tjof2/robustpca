@@ -30,7 +30,6 @@ extensions = [
         language="c++",
         extra_compile_args=[
             "-O3",
-            "-fopenmp",
             "-fPIC",
             "-Wall",
             "-std=c++11",
