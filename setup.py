@@ -16,8 +16,28 @@
 # You should have received a copy of the GNU General Public License
 # along with robustpca.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import numpy as np
+from Cython.Build import cythonize
 from setuptools import find_packages, setup
+from setuptools.extension import Extension
+
+extensions = [
+    Extension(
+        "robustpca._rosl",
+        sources=["robustpca/_rosl.pyx"],
+        include_dirs=["robustpca/", np.get_include()],
+        libraries=["openblas", "lapack", "armadillo"],
+        language="c++",
+        extra_compile_args=[
+            "-O3",
+            "-fPIC",
+            "-Wall",
+            "-std=c++11",
+            "-march=native",
+            "-D NPY_NO_DEPRECATED_API",
+        ],
+    ),
+]
 
 exec(open("robustpca/release_info.py").read())
 
@@ -45,5 +65,7 @@ setup(
     ],
     packages=find_packages(),
     install_requires=["numpy>=1.16", "scikit-learn>=0.20"],
+    setup_requires=["wheel", "auditwheel", "cython"],
     package_data={"": ["LICENSE", "README.md"], "robustpca": ["*.py"]},
+    ext_modules=cythonize(extensions),
 )
