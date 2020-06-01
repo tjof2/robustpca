@@ -63,7 +63,7 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     packages=find_packages(),
-    install_requires=["numpy", "scikit-learn"],
+    install_requires=["numpy", "scipy", "scikit-learn"],
     setup_requires=["wheel", "auditwheel", "cython"],
     package_data={"": ["LICENSE", "README.md"], "robustpca": ["*.py"]},
     ext_modules=cythonize(extensions),
